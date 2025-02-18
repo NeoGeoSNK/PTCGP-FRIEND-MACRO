@@ -26,6 +26,9 @@ global _repoName := "Banana-Macro-PtcgP"
 
 ;; Caminhos de Arquivos
 global _imageFile_friendRequestListCard := A_ScriptDir . "\asset\match\friendRequestListCard.png"
+global _imageFile_friendAdd := A_ScriptDir . "\asset\match\friendAdd.png"
+global _imageFile_friendSearch := A_ScriptDir . "\asset\match\friendSearch.png"
+global _imageFile_sendRequest := A_ScriptDir . "\asset\match\sendRequest.png"
 global _imageFile_friendRequestListEmpty := A_ScriptDir . "\asset\match\friendRequestListEmpty.png"
 global _imageFile_friendRequestListClearButton := A_ScriptDir . "\asset\match\friendRequestListClearButton.png"
 global _imageFile_userDetailEmblem := A_ScriptDir . "\asset\match\userDetailEmblem.png"
@@ -76,11 +79,11 @@ global logFile := A_ScriptDir . "\log\" . A_YYYY . A_MM . A_DD . "_" . A_Hour . 
 
 DownloaderInstance := Downloader()
 ;; msedge.dll 파일 확인
-DownloaderInstance.CheckMsedgeDLL()
+; DownloaderInstance.CheckMsedgeDLL()
 updateScriptPath := A_Temp "\updater.ahk"
 if FileExist(updateScriptPath)
     FileDelete(updateScriptPath)
- DownloaderInstance.CheckForUpdates()
+; DownloaderInstance.CheckForUpdates()
 
 class Downloader {
     gui := ""
@@ -757,141 +760,217 @@ _main(_currentLogic := "00") {
                 }
 
                 if (_nowAccepting == TRUE && _currentLogic == "01") {
+                    
+                    SendUiMsg("winwidth=" "527")
+                    SendUiMsg("winheight=" "970")
+
                     match := ImageSearch(
                         &matchedX
                         , &matchedY
-                        , getScreenXbyWindowPercentage('60%')
-                        , getScreenYbyWindowPercentage('5%')
+                        , getScreenXbyWindowPercentage('78%')
+                        , getScreenYbyWindowPercentage('15%')
                         , getScreenXbyWindowPercentage('99%')
-                        , getScreenYbyWindowPercentage('75%')
-                        , '*50 ' . _imageFile_friendRequestListCard)  ; // 신청 카드 확인
-                    if (match == 1) { ; // 신청 카드 있는 경우
-                        targetX := matchedX - targetWindowX
-                        targetY := matchedY - targetWindowY - 50
-                        delayLong()
-                        ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
-                        delayShort() ; // 오류 방지 위해 2중 클릭
-                        ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
-                        _currentLogic := "02-A"
-                        failCount := 0 ; // 유저 화면 진입 시 failCount 초기화
-                        globalRetryCount := 0
-                        delayLong()
-                    }
-                    else if (match == 0) {
-                        match := ImageSearch(
-                            &matchedX
-                            , &matchedY
-                            , getScreenXbyWindowPercentage('20%')
-                            , getScreenYbyWindowPercentage('45%')
-                            , getScreenXbyWindowPercentage('80%')
-                            , getScreenYbyWindowPercentage('55%')
-                            , '*50 ' . _imageFile_friendRequestListEmpty) ; // 잔여 신청 목록 = 0 인지 확인
-                        if (match == 1) { ; // 잔여 신청 목록 = 0 인 경우
-                            SendUiMsg(_currentLocale.FriendRequestListEmpty)
-                            sleep(10000) ; 10초 중단
-                            InitLocation("RequestList")
-                            globalRetryCount := 0
-                        }
-                        else if (match == 0) { ; // 신청 목록 확인 실패, 일시적인 오류일 수 있어 failCount로 처리
-                            failCount := failCount + 1
-                            delayLong()
-                        }
-                    }
-                }
-                if (failCount >= 4) {
-                    globalRetryCount := globalRetryCount + 1
-                    if (globalRetryCount > 99) {
-                        SendUiMsg(_currentLocale.ReloadScriptTip)
-                        SendUiMsg(_currentLocale.ReloadScriptFailure)
-                        globalRetryCount := 0
-                    }
-                    SendUiMsg(_currentLocale.NoRecentActivityError)
-                    InitLocation("RequestList")
-                    _currentLogic := "01"
-                    failCount := 0
-                    delayShort()
-                }
-
-            case "02-A": ; // 02. Detalhes do Usuário // A. Confirmação de entrada na tela
-                caseDescription := _currentLocale.UserScreenOpen
-                SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
-                match := ImageSearch(
-                    &matchedX,
-                    &matchedY,
-                    getScreenXbyWindowPercentage('12%'),
-                    getScreenYbyWindowPercentage('70%'),
-                    getScreenXbyWindowPercentage('88%'),
-                    getScreenYbyWindowPercentage('77%'),
-                    '*50 ' . _imageFile_userDetailRequestFriend)
-                if (match == 1) {
-                    SendUiMsg(_currentLocale.UserCancelledRequest)
-                    _clickCloseModalButton()
-                    _thisUserFulfilled := TRUE
-                    _currentLogic := "01"
-                }
-                else if (match == 0) {
-                        _currentLogic := "02-B"
-                        failCount := 0
-                }
-
-                ;02. Detalhes do Usuário
-            case "02-B":
-                _thisUserPass := TRUE
-                _thisUserFulfilled := FALSE
-                SendUiMsg("✅" . _currentLocale.EnteringUserProfile)
-                _currentLogic := "03-B"
-                failCount := 0
-                delayShort()
-
-                ; 03. Inspeção de Entrada // A. Verificação
-            case "03-A":
-                caseDescription := _currentLocale.UserInspection
-                SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
-                ; _delayLong() ; // 1배속
-                if (failCount < 5) {
-                    match := ImageSearch(
-                        &matchedX
-                        , &matchedY
-                        , getScreenXbyWindowPercentage('2%')
-                        , getScreenYbyWindowPercentage('83%')
-                        , getScreenXbyWindowPercentage('22%')
-                        , getScreenYbyWindowPercentage('90%')
-                        , '*50 ' . _imageFile_passportPikachu)
+                        , getScreenYbyWindowPercentage('22%')
+                        , '*50 ' . _imageFile_friendAdd)
                     if (match == 1) {
-                        _thisUserPass := TRUE
-                        _thisUserFulfilled := FALSE
-                        SendUiMsg("✅" . _currentLocale.EnteringUserProfile)
-                        ; ControlClick('X' . getWindowXbyWindowPercentage('50%') . ' Y' .
-                        ; getWindowYbyWindowPercentage(
-                        ;     '95%'), targetWindowHwnd, , 'Left', 1, 'NA', ,)
-                        _currentLogic := "03-B"
-                        failCount := 0
-                        delayShort()
-                    }
-                    else if (match == 0) {
-                        SendUiMsg(_currentLocale.UserInspectionFail)
-                        failCount := failCount + 1
+                        SendUiMsg('Got Image..................')
+                        targetX := matchedX - targetWindowX
+                        targetY := matchedY - targetWindowY
                         delayLong()
-                    }
-                }
-                if (failCount >= 5) {
-                    SendUiMsg("❌" . _currentLocale.UserInspectionRefused)
-                    _thisUserPass := FALSE
-                    _thisUserFulfilled := FALSE
-                    ControlClick('X' . getWindowXbyWindowPercentage('50%') . ' Y' . getWindowYbyWindowPercentage(
-                        '95%'),
-                    targetWindowHwnd, , 'Left', 1, 'NA', ,)
-                    _currentLogic := "03-B"
-                    failCount := 0
-                    delayShort()
-                }
+                        ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
+                        delayXLong()
+                        delayXLong()
 
-                ; 03. Inspeção de Entrada // B. Reentrada na tela do usuário, Processamento da solicitação
-            case "03-B":
-                caseDescription := _currentLocale.UserReentry
-                SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
-                _currentLogic := "03-C"
-                failCount := 0
+; Attempt to locate the text box via ImageSearch.
+textboxFound := ImageSearch(  &textboxX
+		, &textboxY
+		, getScreenXbyWindowPercentage('66%')
+		, getScreenYbyWindowPercentage('72%')
+		, getScreenXbyWindowPercentage('96%')
+		, getScreenYbyWindowPercentage('96%')
+		, "*50 " . _imageFile_friendSearch)
+
+if (textboxFound == 1) {
+	SendUiMsg("Text box located!")
+		targetTextX := textboxX - targetWindowX
+		targetTextY := textboxY - targetWindowY
+		A_Clipboard := "3122107181204631"
+		ControlClick("X" . targetTextX - 200 . " Y" . targetTextY, targetWindowHwnd, "", "Left", 1, "NA")
+		delayLong()
+		Send("^v")  ; Simulate Ctrl+V to paste.
+		delayLong()
+		Send "{Enter}"
+		delayLong()
+		ControlClick("X" . targetTextX . " Y" . targetTextY, targetWindowHwnd, "", "Left", 1, "NA")
+		delayXLong()
+		delayXLong()
+
+; Attempt to send friend request
+sendRequestFound := ImageSearch(  &sendRequestX
+		, &sendRequestY
+		, getScreenXbyWindowPercentage('58%')
+		, getScreenYbyWindowPercentage('44%')
+		, getScreenXbyWindowPercentage('92%')
+		, getScreenYbyWindowPercentage('50%')
+		, "*50 " . _imageFile_sendRequest)
+
+if (sendRequestFound == 1) {
+	SendUiMsg("Send Request located!")
+		targetReqX := sendRequestX - targetWindowX
+		targetReqY := sendRequestY - targetWindowY
+		delayLong()
+		ControlClick("X" . targetReqX . " Y" . targetReqY, targetWindowHwnd, "", "Left", 1, "NA")
+		delayLong()
+                SendUiMsg("_currentLogic = " _currentLogic)
+} else {
+	SendUiMsg("Can't find send Requestttttttttttttt")
+}
+
+} else {
+	SendUiMsg("Text box not found!")
+		; You might want to add error handling or a retry mechanism here.
+}
+
+} else if (match == 0) {
+	SendUiMsg('hello error')
+}
+
+
+match := ImageSearch(
+		       &matchedX
+		       , &matchedY
+		       , getScreenXbyWindowPercentage('60%')
+		       , getScreenYbyWindowPercentage('5%')
+		       , getScreenXbyWindowPercentage('99%')
+		       , getScreenYbyWindowPercentage('75%')
+		       , '*50 ' . _imageFile_friendRequestListCard)  ; // 신청 카드 확인
+if (match == 1) { ; // 신청 카드 있는 경우
+targetX := matchedX - targetWindowX
+		 targetY := matchedY - targetWindowY - 50
+		 delayLong()
+		 ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
+		 delayShort() ; // 오류 방지 위해 2중 클릭
+	 ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
+		 _currentLogic := "02-A"
+		 failCount := 0 ; // 유저 화면 진입 시 failCount 초기화
+globalRetryCount := 0
+			  delayLong()
+}
+else if (match == 0) {
+match := ImageSearch(
+		       &matchedX
+		       , &matchedY
+		       , getScreenXbyWindowPercentage('20%')
+		       , getScreenYbyWindowPercentage('45%')
+		       , getScreenXbyWindowPercentage('80%')
+		       , getScreenYbyWindowPercentage('55%')
+		       , '*50 ' . _imageFile_friendRequestListEmpty) ; // 잔여 신청 목록 = 0 인지 확인
+       if (match == 1) { ; // 잔여 신청 목록 = 0 인 경우
+	       SendUiMsg(_currentLocale.FriendRequestListEmpty)
+		       sleep(10000) ; 10초 중단
+		       InitLocation("RequestList")
+		       globalRetryCount := 0
+       }
+       else if (match == 0) { ; // 신청 목록 확인 실패, 일시적인 오류일 수 있어 failCount로 처리
+	       failCount := failCount + 1
+		       delayLong()
+       }
+}
+}
+if (failCount >= 4) {
+globalRetryCount := globalRetryCount + 1
+			  if (globalRetryCount > 99) {
+				  SendUiMsg(_currentLocale.ReloadScriptTip)
+					  SendUiMsg(_currentLocale.ReloadScriptFailure)
+					  globalRetryCount := 0
+			  }
+		  SendUiMsg(_currentLocale.NoRecentActivityError)
+			  InitLocation("RequestList")
+			  _currentLogic := "01"
+			  failCount := 0
+			  delayShort()
+}
+
+case "02-A": ; // 02. Detalhes do Usuário // A. Confirmação de entrada na tela
+caseDescription := _currentLocale.UserScreenOpen
+SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
+match := ImageSearch(
+		&matchedX,
+		&matchedY,
+		getScreenXbyWindowPercentage('12%'),
+		getScreenYbyWindowPercentage('70%'),
+		getScreenXbyWindowPercentage('88%'),
+		getScreenYbyWindowPercentage('77%'),
+		'*50 ' . _imageFile_userDetailRequestFriend)
+if (match == 1) {
+	SendUiMsg(_currentLocale.UserCancelledRequest)
+		_clickCloseModalButton()
+		_thisUserFulfilled := TRUE
+		_currentLogic := "01"
+}
+else if (match == 0) {
+_currentLogic := "02-B"
+		       failCount := 0
+}
+
+;02. Detalhes do Usuário
+case "02-B":
+_thisUserPass := TRUE
+_thisUserFulfilled := FALSE
+SendUiMsg("✅" . _currentLocale.EnteringUserProfile)
+_currentLogic := "03-B"
+	failCount := 0
+delayShort()
+
+	; 03. Inspeção de Entrada // A. Verificação
+	case "03-A":
+	caseDescription := _currentLocale.UserInspection
+	SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
+	; _delayLong() ; // 1배속
+	if (failCount < 5) {
+match := ImageSearch(
+		       &matchedX
+		       , &matchedY
+		       , getScreenXbyWindowPercentage('2%')
+		       , getScreenYbyWindowPercentage('83%')
+		       , getScreenXbyWindowPercentage('22%')
+		       , getScreenYbyWindowPercentage('90%')
+		       , '*50 ' . _imageFile_passportPikachu)
+	       if (match == 1) {
+_thisUserPass := TRUE
+		       _thisUserFulfilled := FALSE
+		       SendUiMsg("✅" . _currentLocale.EnteringUserProfile)
+		       ; ControlClick('X' . getWindowXbyWindowPercentage('50%') . ' Y' .
+				       ; getWindowYbyWindowPercentage(
+					       ;     '95%'), targetWindowHwnd, , 'Left', 1, 'NA', ,)
+		       _currentLogic := "03-B"
+		       failCount := 0
+		       delayShort()
+	       }
+	       else if (match == 0) {
+		       SendUiMsg(_currentLocale.UserInspectionFail)
+			       failCount := failCount + 1
+			       delayLong()
+	       }
+	}
+if (failCount >= 5) {
+	SendUiMsg("❌" . _currentLocale.UserInspectionRefused)
+		_thisUserPass := FALSE
+		_thisUserFulfilled := FALSE
+		ControlClick('X' . getWindowXbyWindowPercentage('50%') . ' Y' . getWindowYbyWindowPercentage(
+					'95%'),
+				targetWindowHwnd, , 'Left', 1, 'NA', ,)
+		_currentLogic := "03-B"
+		failCount := 0
+		delayShort()
+}
+
+; 03. Inspeção de Entrada // B. Reentrada na tela do usuário, Processamento da solicitação
+case "03-B":
+caseDescription := _currentLocale.UserReentry
+SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
+_currentLogic := "03-C"
+failCount := 0
 
             case "03-C":
                 caseDescription := _currentLocale.SolicitationProccess
