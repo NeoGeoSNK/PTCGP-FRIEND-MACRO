@@ -673,25 +673,56 @@ SendUiMsg(_currentLocale.Translator)
     SendUiMsg(" ")
 SendUiMsg(_currentLocale.InicializationComplete)
 
-    _main(_currentLogic := "00") {
-        global _isRunning
-            global targetWindowHwnd
-            global GuiInstance
-            global _instanceNameConfig := _userIni.InstanceName
-            SetTitleMatchMode 3
 
-            if ( NOT _instanceNameConfig) {
+    ; Function to read user codes from file
+    ReadUserCodesFromFile() {
+        local userCodes := []
+            local filePath := "usercodes.txt"
+            if !FileExist(filePath) {
+                SendUiMsg("Error: usercodes.txt not found. Please create this file.")
+                    return userCodes ; Return empty array
+            }
+        local fileContent := FileRead(filePath)
+            userCodes := StrSplit(fileContent, "`n", "`r")
+            return userCodes
+    }
+
+
+
+_main(_currentLogic := "00") {
+        global _isRunning
+        global targetWindowHwnd
+        global GuiInstance
+        global _instanceNameConfig := _userIni.InstanceName
+        global userCodesArray
+        global userCodeIndex
+        global userCodesCount
+
+global userCodesArray := ReadUserCodesFromFile() ; Direct function call - no variable assignment needed
+global userCodeIndex := 1
+global userCodesCount := userCodesArray.Length
+
+if (userCodesCount = 0) {
+    SendUiMsg("No user codes found in usercodes.txt. Please add user codes to the file.")
+        ; You might want to exit the script here or handle it differently
+} else {
+    SendUiMsg("Found " . userCodesCount . " user codes in usercodes.txt.")
+}
+
+        SetTitleMatchMode 3
+
+        if ( NOT _instanceNameConfig) {
 GuiInstance := ConfigGUI()
                  SendUiMsg(_currentLocale.InstanceNameNotInserted)
                  SetTimer(() => FinishRun(), -1)
                  return
-            }
-        if ( NOT WinExist(_instanceNameConfig)) {
+        }
+    if ( NOT WinExist(_instanceNameConfig)) {
 GuiInstance := ConfigGUI()
                  SendUiMsg(_currentLocale.InstanceNameNotFound)
                  SetTimer(() => FinishRun(), -1)
                  return
-        }
+    }
 
 targetWindowHwnd := WinExist(_instanceNameConfig)
                       if ( NOT targetWindowHwnd) {
@@ -740,29 +771,15 @@ targetWindowHwnd := WinExist(_instanceNameConfig)
                                           caseDescription := _currentLocale.StartFriendAddDesc
                                           SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
                                           InitLocation("RequestList")
-                                          _currentLogic := "01"
+                                          _currentLogic := "000"
                                           static globalRetryCount := 0
                                           failCount := 0
 
-                                          ; 01. 친구 추가 확인
-                                  case "01":
-                                          caseDescription := _currentLocale.ConfirmAdd
-                                              SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
+                                  case "000":
 
-                                              elapsedTime := _getElapsedTime()
-                                              PhaseToggler(elapsedTime)
+                                          if (userCodeIndex <= userCodesCount) {
 
-                                              if (_nowAccepting = FALSE) {
-_currentLogic := "D00"
-                   SendUiMsg(_currentLocale.PhaseChangeDeletion . Round(_deletingTermConfig / 60000) . " mins.")
-                   globalRetryCount := 0
-                   Sleep(_deletingTermConfig)
-                                              }
-
-                                          if (_nowAccepting == TRUE && _currentLogic == "01") {
-
-                                              SendUiMsg("winwidth=" "527")
-                                                  SendUiMsg("winheight=" "970")
+                                              delayXLong()
 
                                                   match := ImageSearch(
                                                           &matchedX
@@ -773,68 +790,99 @@ _currentLogic := "D00"
                                                           , getScreenYbyWindowPercentage('22%')
                                                           , '*50 ' . _imageFile_friendAdd)
                                                   if (match == 1) {
-                                                      SendUiMsg('Got Image..................')
-                                                          targetX := matchedX - targetWindowX
-                                                          targetY := matchedY - targetWindowY
-                                                          delayLong()
-                                                          ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
-                                                          delayXLong()
-                                                          delayXLong()
+targetX := matchedX - targetWindowX
+             targetY := matchedY - targetWindowY
+             delayLong()
+             ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
+             delayXLong()
 
-                                                          ; Attempt to locate the text box via ImageSearch.
-                                                          textboxFound := ImageSearch(  &textboxX
-                                                                  , &textboxY
-                                                                  , getScreenXbyWindowPercentage('66%')
-                                                                  , getScreenYbyWindowPercentage('72%')
-                                                                  , getScreenXbyWindowPercentage('96%')
-                                                                  , getScreenYbyWindowPercentage('96%')
-                                                                  , "*50 " . _imageFile_friendSearch)
+             ; Attempt to locate the text box via ImageSearch.
+             friendSearchFound := ImageSearch(  &textboxX
+                     , &textboxY
+                     , getScreenXbyWindowPercentage('66%')
+                     , getScreenYbyWindowPercentage('72%')
+                     , getScreenXbyWindowPercentage('96%')
+                     , getScreenYbyWindowPercentage('96%')
+                     , "*50 " . _imageFile_friendSearch)
 
-                                                          if (textboxFound == 1) {
-                                                              SendUiMsg("Text box located!")
-                                                                  targetTextX := textboxX - targetWindowX
-                                                                  targetTextY := textboxY - targetWindowY
-                                                                  A_Clipboard := "3122107181204631"
-                                                                  ControlClick("X" . targetTextX - 200 . " Y" . targetTextY, targetWindowHwnd, "", "Left", 1, "NA")
-                                                                  delayLong()
-                                                                  Send("^v")  ; Simulate Ctrl+V to paste.
-                                                                  delayLong()
-                                                                  Send "{Enter}"
-                                                                  delayLong()
-                                                                  ControlClick("X" . targetTextX . " Y" . targetTextY, targetWindowHwnd, "", "Left", 1, "NA")
-                                                                  delayXLong()
-                                                                  delayXLong()
+             if (friendSearchFound == 1) {
+                 SendUiMsg("#######Friend search button located!")
+                     targetTextX := textboxX - targetWindowX
+                     targetTextY := textboxY - targetWindowY
 
-                                                                  ; Attempt to send friend request
-                                                                  sendRequestFound := ImageSearch(  &sendRequestX
-                                                                          , &sendRequestY
-                                                                          , getScreenXbyWindowPercentage('58%')
-                                                                          , getScreenYbyWindowPercentage('44%')
-                                                                          , getScreenXbyWindowPercentage('92%')
-                                                                          , getScreenYbyWindowPercentage('50%')
-                                                                          , "*50 " . _imageFile_sendRequest)
+                     currentCode := Trim(userCodesArray[userCodeIndex]) ; Get current user code
+                     if (currentCode != "") {
+A_Clipboard := currentCode ; Set clipboard to the user code
+                 ControlClick("X" . targetTextX - 200 . " Y" . targetTextY, targetWindowHwnd, "", "Left", 1, "NA")
+                 delayXLong()
+                 Send("^v")  ; Simulate Ctrl+V to paste.
+                 delayLong()
+                 Send "{Enter}"
+                 delayLong()
+                 ControlClick("X" . targetTextX . " Y" . targetTextY, targetWindowHwnd, "", "Left", 1, "NA")
+                 SendUiMsg("#######Start searching with code:" A_Clipboard)
+                 delayXLong()
+                 delayXLong()
 
-                                                                  if (sendRequestFound == 1) {
-                                                                      SendUiMsg("Send Request located!")
-                                                                          targetReqX := sendRequestX - targetWindowX
-                                                                          targetReqY := sendRequestY - targetWindowY
-                                                                          delayLong()
-                                                                          ControlClick("X" . targetReqX . " Y" . targetReqY, targetWindowHwnd, "", "Left", 1, "NA")
-                                                                          delayLong()
-                                                                          SendUiMsg("_currentLogic = " _currentLogic)
-                                                                  } else {
-                                                                      SendUiMsg("Can't find send Requestttttttttttttt")
-                                                                  }
+                 ; Attempt to send friend request
+                 sendRequestFound := ImageSearch(  &sendRequestX
+                         , &sendRequestY
+                         , getScreenXbyWindowPercentage('58%')
+                         , getScreenYbyWindowPercentage('44%')
+                         , getScreenXbyWindowPercentage('92%')
+                         , getScreenYbyWindowPercentage('50%')
+                         , "*50 " . _imageFile_sendRequest)
 
-                                                          } else {
-                                                              SendUiMsg("Text box not found!")
-                                                                  ; You might want to add error handling or a retry mechanism here.
-                                                          }
+                 if (sendRequestFound == 1) {
+                     SendUiMsg("#######Send Request located!")
+                         targetReqX := sendRequestX - targetWindowX
+                         targetReqY := sendRequestY - targetWindowY
+                         ControlClick("X" . targetReqX . " Y" . targetReqY, targetWindowHwnd, "", "Left", 1, "NA")
+                 } else {
+                     SendUiMsg("#######Can't find send request button")
+                 }
+
+                         delayXLong()
+
+                     } else {
+                         SendUiMsg("#######Warning: Empty user code in usercodes.txt at line " . userCodeIndex . ". Skipping.")
+                     }
+
+             } else {
+                 SendUiMsg("#######Search friend text box not found!")
+                     ; You might want to add error handling or a retry mechanism here.
+             }
 
                                                   } else if (match == 0) {
-                                                      SendUiMsg('hello error')
+                                                      SendUiMsg("#######Can't find add friend icon")
                                                   }
 
+                                              SendUiMsg("#######Processing user: " . userCodeIndex . " done")
+                                                  userCodeIndex++
+
+                                          } else {
+                                              SendUiMsg("#######All user codes processed.")
+                                              FinishRun()
+                                          }
+
+                                          InitLocation("RequestList")
+
+                                          ; 01. 친구 추가 확인
+                                  case "01":
+                                              caseDescription := _currentLocale.ConfirmAdd
+                                                  SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
+
+                                                  elapsedTime := _getElapsedTime()
+                                                  PhaseToggler(elapsedTime)
+
+                                                  if (_nowAccepting = FALSE) {
+_currentLogic := "D00"
+                   SendUiMsg(_currentLocale.PhaseChangeDeletion . Round(_deletingTermConfig / 60000) . " mins.")
+                   globalRetryCount := 0
+                   Sleep(_deletingTermConfig)
+                                                  }
+
+                                              if (_nowAccepting == TRUE && _currentLogic == "01") {
 
 match := ImageSearch(
                &matchedX
@@ -876,8 +924,8 @@ match := ImageSearch(
                delayLong()
        }
        }
-                                          }
-                                          if (failCount >= 4) {
+                                              }
+                                              if (failCount >= 4) {
 globalRetryCount := globalRetryCount + 1
                       if (globalRetryCount > 99) {
                           SendUiMsg(_currentLocale.ReloadScriptTip)
@@ -889,7 +937,7 @@ globalRetryCount := globalRetryCount + 1
                       _currentLogic := "01"
                       failCount := 0
                       delayShort()
-                                          }
+                                              }
 
                                   case "02-A": ; // 02. Detalhes do Usuário // A. Confirmação de entrada na tela
 caseDescription := _currentLocale.UserScreenOpen
@@ -1199,10 +1247,10 @@ globalRetryCount := 0
                                                                                        , '*50 ' . _imageFile_friendCountEmpty)
                                                                                if (match == 1) {
                                                                                    SendUiMsg(_currentLocale.AllFriendsDeleted)
-                                                                                       SendUiMsg(_currentLocale.ReturningToAddPhase)
                                                                                        PhaseToggler()
                                                                                        globalRetryCount := 0 
-                                                                                       _currentLogic := "00"
+                                                                                       delayXLong()
+                                                                                       FinishRun() 
                                                                                }
                                                                                else if (match == 0) {
 failCount := failCount + 1
@@ -1334,7 +1382,7 @@ failCount := failCount + 1
 
                               }
                       }
-    }
+}
 
 getScreenXbyWindowPercentage(somePercentage) {
     if targetWindowWidth = false {
