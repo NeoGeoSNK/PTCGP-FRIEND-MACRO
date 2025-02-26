@@ -23,6 +23,7 @@ global _repoName := "Banana-Macro-PtcgP"
 #Requires AutoHotkey v2.0
 #Include .\app\WebView2.ahk
 #include .\app\_JXON.ahk
+#Include .\app\Gdip_All.ahk  ; Ensure this is the v2-compatible version
 
 ;; Caminhos de Arquivos
 global _imageFile_friendRequestListCard := A_ScriptDir . "\asset\match\friendRequestListCard.png"
@@ -663,53 +664,106 @@ OldTextCtrl.SetFont("C666666", "Segoe UI Emoji, Segoe UI")
 if (_debug == TRUE) {
     statusGUI.Show("")
 }
-SendDebugMsg(_currentLocale.DebugMsgDesc)
-
-SendUiMsg(_currentLocale.OriginalRepoLinkText)
-    SendUiMsg(" ")
-SendUiMsg(_currentLocale.Translator)
-    SendUiMsg(" ")
-    SendUiMsg("PtcgP FriendMacro " _currentVersion " by GaloXDoido")
-    SendUiMsg(" ")
-SendUiMsg(_currentLocale.InicializationComplete)
 
 
     ; Function to read user codes from file
-    ReadUserCodesFromFile() {
+    ReadUserCodesFromFile(fileName) {
         local userCodes := []
-            local filePath := "usercodes.txt"
+            local filePath := fileName
             if !FileExist(filePath) {
-                SendUiMsg("Error: usercodes.txt not found. Please create this file.")
+                SendUiMsg("Error: " . filePath . " not found. Please create this file.")
                     return userCodes ; Return empty array
             }
         local fileContent := FileRead(filePath)
             userCodes := StrSplit(fileContent, "`n", "`r")
-            return userCodes
+            ; Remove empty lines and trim whitespace
+            Loop userCodes.Length {
+                userCodes[A_Index] := Trim(userCodes[A_Index])
+            }
+        ; Filter out empty entries
+            filteredCodes := []
+            for code in userCodes {
+                if (code != "") {
+                    filteredCodes.Push(code)
+                }
+            }
+        return filteredCodes
     }
 
 
 
+
+
+pToken := Gdip_Startup()  ; Initialize Gdip and store the token
+
+; Define the OCR function
+OCR(area, lang) {
+x := area[1]
+       y := area[2]
+       w := area[3]
+       h := area[4]
+       pBitmap := Gdip_BitmapFromScreen(x "|" y "|" w "|" h)
+
+       ; Use a unique filename with timestamp to avoid overwriting
+       timestamp := FormatTime(A_Now, "yyyyMMdd_HHmmss")
+       tempFile := "capture_" . timestamp . ".png"
+       Gdip_SaveBitmapToFile(pBitmap, tempFile)
+       Gdip_DisposeImage(pBitmap)
+
+       ; Run Tesseract on the captured image
+       RunWait "tesseract " . tempFile . " output -l " . lang
+       T := FileRead("output.txt")
+
+       ; Keep tempFile (don’t delete it); delete only the Tesseract output
+       FileDelete "output.txt"
+
+       SendUiMsg("Captured image saved as: " . tempFile)
+       return T
+}
+
+
+
+
+
+
+
+
+
 _main(_currentLogic := "00") {
-        global _isRunning
+
+
+    global _isRunning
         global targetWindowHwnd
         global GuiInstance
         global _instanceNameConfig := _userIni.InstanceName
         global userCodesArray
         global userCodeIndex
         global userCodesCount
+        global userDelArray  ; Add global for deletion list
+        global userDelIndex
+        global userDelCount
 
-global userCodesArray := ReadUserCodesFromFile() ; Direct function call - no variable assignment needed
-global userCodeIndex := 1
-global userCodesCount := userCodesArray.Length
+        userCodesArray := ReadUserCodesFromFile("usercodes.txt")  ; For adding friends
+        userCodeIndex := 1
+        userCodesCount := userCodesArray.Length
 
-if (userCodesCount = 0) {
-    SendUiMsg("No user codes found in usercodes.txt. Please add user codes to the file.")
-        ; You might want to exit the script here or handle it differently
-} else {
-    SendUiMsg("Found " . userCodesCount . " user codes in usercodes.txt.")
-}
+        userDelArray := ReadUserCodesFromFile("userdel.txt")      ; For deleting friends
+        userDelIndex := 1
+        userDelCount := userDelArray.Length
 
-        SetTitleMatchMode 3
+        if (userCodesCount = 0) {
+            SendUiMsg("No user codes found in usercodes.txt. Please add user codes to the file.")
+        } else {
+            SendUiMsg("Found " . userCodesCount . " user codes in usercodes.txt.")
+        }
+    if (userDelArray.Length = 0) {
+        SendUiMsg("No user IDs found in userdel.txt. Deletion will be skipped unless IDs are added.")
+    } else {
+        SendUiMsg("Found " . userDelArray.Length . " user IDs in userdel.txt for deletion.")
+    }
+
+
+    SetTitleMatchMode 3
 
         if ( NOT _instanceNameConfig) {
 GuiInstance := ConfigGUI()
@@ -756,6 +810,12 @@ targetWindowHwnd := WinExist(_instanceNameConfig)
                           }
 
                           WinGetPos(&targetWindowX, &targetWindowY, &targetWindowWidth, &targetWindowHeight, targetWindowHwnd)
+
+                              SendUiMsg("targetWindowX= " . targetWindowX)
+                              SendUiMsg("targetWindowY= " . targetWindowY)
+                              SendUiMsg("targetWindowWidth= " . targetWindowWidth)
+                              SendUiMsg("targetWindowHeight= " . targetWindowHeight)
+                              SendUiMsg("targetWindowHwnd= " . targetWindowHwnd)
 
                               switch _currentLogic {
                                   ; 00. 화면 초기화
@@ -842,7 +902,7 @@ A_Clipboard := currentCode ; Set clipboard to the user code
                      SendUiMsg("#######Can't find send request button")
                  }
 
-                         delayXLong()
+             delayXLong()
 
                      } else {
                          SendUiMsg("#######Warning: Empty user code in usercodes.txt at line " . userCodeIndex . ". Skipping.")
@@ -862,400 +922,81 @@ A_Clipboard := currentCode ; Set clipboard to the user code
 
                                           } else {
                                               SendUiMsg("#######All user codes processed.")
-                                              FinishRun()
+                                                  FinishRun()
                                           }
 
-                                          InitLocation("RequestList")
+                                          InitLocation("FriendList")
 
-                                          ; 01. 친구 추가 확인
-                                  case "01":
-                                              caseDescription := _currentLocale.ConfirmAdd
-                                                  SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
 
-                                                  elapsedTime := _getElapsedTime()
-                                                  PhaseToggler(elapsedTime)
-
-                                                  if (_nowAccepting = FALSE) {
-_currentLogic := "D00"
-                   SendUiMsg(_currentLocale.PhaseChangeDeletion . Round(_deletingTermConfig / 60000) . " mins.")
-                   globalRetryCount := 0
-                   Sleep(_deletingTermConfig)
-                                                  }
-
-                                              if (_nowAccepting == TRUE && _currentLogic == "01") {
-
-match := ImageSearch(
-               &matchedX
-               , &matchedY
-               , getScreenXbyWindowPercentage('60%')
-               , getScreenYbyWindowPercentage('5%')
-               , getScreenXbyWindowPercentage('99%')
-               , getScreenYbyWindowPercentage('75%')
-               , '*50 ' . _imageFile_friendRequestListCard)  ; // 신청 카드 확인
-       if (match == 1) { ; // 신청 카드 있는 경우
-targetX := matchedX - targetWindowX
-             targetY := matchedY - targetWindowY - 50
-             delayLong()
-             ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
-             delayShort() ; // 오류 방지 위해 2중 클릭
-         ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
-             _currentLogic := "02-A"
-             failCount := 0 ; // 유저 화면 진입 시 failCount 초기화
-globalRetryCount := 0
-                      delayLong()
-       }
-       else if (match == 0) {
-match := ImageSearch(
-               &matchedX
-               , &matchedY
-               , getScreenXbyWindowPercentage('20%')
-               , getScreenYbyWindowPercentage('45%')
-               , getScreenXbyWindowPercentage('80%')
-               , getScreenYbyWindowPercentage('55%')
-               , '*50 ' . _imageFile_friendRequestListEmpty) ; // 잔여 신청 목록 = 0 인지 확인
-       if (match == 1) { ; // 잔여 신청 목록 = 0 인 경우
-           SendUiMsg(_currentLocale.FriendRequestListEmpty)
-               sleep(10000) ; 10초 중단
-               InitLocation("RequestList")
-               globalRetryCount := 0
-       }
-       else if (match == 0) { ; // 신청 목록 확인 실패, 일시적인 오류일 수 있어 failCount로 처리
-           failCount := failCount + 1
-               delayLong()
-       }
-       }
-                                              }
-                                              if (failCount >= 4) {
-globalRetryCount := globalRetryCount + 1
-                      if (globalRetryCount > 99) {
-                          SendUiMsg(_currentLocale.ReloadScriptTip)
-                              SendUiMsg(_currentLocale.ReloadScriptFailure)
-                              globalRetryCount := 0
-                      }
-                  SendUiMsg(_currentLocale.NoRecentActivityError)
-                      InitLocation("RequestList")
-                      _currentLogic := "01"
-                      failCount := 0
-                      delayShort()
-                                              }
-
-                                  case "02-A": ; // 02. Detalhes do Usuário // A. Confirmação de entrada na tela
-caseDescription := _currentLocale.UserScreenOpen
-                     SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
-                     match := ImageSearch(
-                             &matchedX,
-                             &matchedY,
-                             getScreenXbyWindowPercentage('12%'),
-                             getScreenYbyWindowPercentage('70%'),
-                             getScreenXbyWindowPercentage('88%'),
-                             getScreenYbyWindowPercentage('77%'),
-                             '*50 ' . _imageFile_userDetailRequestFriend)
-                     if (match == 1) {
-                         SendUiMsg(_currentLocale.UserCancelledRequest)
-                             _clickCloseModalButton()
-                             _thisUserFulfilled := TRUE
-                             _currentLogic := "01"
-                     }
-                     else if (match == 0) {
-_currentLogic := "02-B"
-                   failCount := 0
-                     }
-
-                                               ;02. Detalhes do Usuário
-                                  case "02-B":
-                                                   _thisUserPass := TRUE
-                                                       _thisUserFulfilled := FALSE
-                                                       SendUiMsg("✅" . _currentLocale.EnteringUserProfile)
-                                                       _currentLogic := "03-B"
-                                                       failCount := 0
-                                                       delayShort()
-
-                                                       ; 03. Inspeção de Entrada // A. Verificação
-                                  case "03-A":
-                                                       caseDescription := _currentLocale.UserInspection
-                                                           SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
-                                                           ; _delayLong() ; // 1배속
-                                                       if (failCount < 5) {
-match := ImageSearch(
-               &matchedX
-               , &matchedY
-               , getScreenXbyWindowPercentage('2%')
-               , getScreenYbyWindowPercentage('83%')
-               , getScreenXbyWindowPercentage('22%')
-               , getScreenYbyWindowPercentage('90%')
-               , '*50 ' . _imageFile_passportPikachu)
-           if (match == 1) {
-_thisUserPass := TRUE
-                   _thisUserFulfilled := FALSE
-                   SendUiMsg("✅" . _currentLocale.EnteringUserProfile)
-                   ; ControlClick('X' . getWindowXbyWindowPercentage('50%') . ' Y' .
-                           ; getWindowYbyWindowPercentage(
-                               ;     '95%'), targetWindowHwnd, , 'Left', 1, 'NA', ,)
-                   _currentLogic := "03-B"
-                   failCount := 0
-                   delayShort()
-           }
-           else if (match == 0) {
-               SendUiMsg(_currentLocale.UserInspectionFail)
-                   failCount := failCount + 1
-                   delayLong()
-           }
-                                                       }
-                                                       if (failCount >= 5) {
-                                                           SendUiMsg("❌" . _currentLocale.UserInspectionRefused)
-                                                               _thisUserPass := FALSE
-                                                               _thisUserFulfilled := FALSE
-                                                               ControlClick('X' . getWindowXbyWindowPercentage('50%') . ' Y' . getWindowYbyWindowPercentage(
-                                                                           '95%'),
-                                                                       targetWindowHwnd, , 'Left', 1, 'NA', ,)
-                                                               _currentLogic := "03-B"
-                                                               failCount := 0
-                                                               delayShort()
-                                                       }
-
-                                                       ; 03. Inspeção de Entrada // B. Reentrada na tela do usuário, Processamento da solicitação
-                                  case "03-B":
-                                                           caseDescription := _currentLocale.UserReentry
-                                                               SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
-                                                               _currentLogic := "03-C"
-                                                               failCount := 0
-
-                                  case "03-C":
-                                                               caseDescription := _currentLocale.SolicitationProccess
-                                                                   SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
-                                                                   if (_thisUserPass == TRUE && _thisUserFulfilled == FALSE) {
-match := ImageSearch(
-               &matchedX
-               , &matchedY
-               , getScreenXbyWindowPercentage('12%')
-               , getScreenYbyWindowPercentage('70%')
-               , getScreenXbyWindowPercentage('88%')
-               , getScreenYbyWindowPercentage('77%')
-               , '*50 ' . _imageFile_userDetailAccept)
-           ; _statusMsg("[match] = " . match)
-           SendUiMsg("[match] = " . match)
-           if (match == 1) {
-targetX := matchedX - targetWindowX + 10
-             targetY := matchedY - targetWindowY + 10
-             ; _statusMsg("[Click]`ntargetX : " . targetX . "`ntargetY : " . targetY)
-             ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
-             _thisUserFulfilled := TRUE
-             failCount := 0
-             delayLong() ; // Problema no servidor da Nintendo causando carregamento
-           }
-           else if (match == 0) {
-failCount := failCount + 1
-               ; ControlClick(targetControlHandle, targetWindowHwnd, , 'WD', 3, 'NA', ,) ;
-
-           ; 재시도 후 failsafe, 해당 유저의 신청 포기 처리, 현재 case 정보 로그 남기기
-               match := ImageSearch(
-                       &matchedX,
-                       &matchedY,
-                       getScreenXbyWindowPercentage('12%'),
-                       getScreenYbyWindowPercentage('70%'),
-                       getScreenXbyWindowPercentage('88%'),
-                       getScreenYbyWindowPercentage('77%'),
-                       '*50 ' . _imageFile_userDetailRequestFriend)
-               if (match == 1) {
-                   SendUiMsg(_currentLocale.UserCancelledRequest)
-                       _clickCloseModalButton()
-                       _thisUserFulfilled := TRUE
-                       _currentLogic := "01"
-                       failCount := 0
-               }
-               else if (match == 0) {
-                   delayShort()
-               }
-           }
-       if (failCount >= 5) {
-           SendUiMsg(_currentLocale.ApproveFail)
-               _clickCloseModalButton()
-               _currentLogic := "01"
-               failCount := 0
-               delayShort()
-       }
-
-                                                                   }
-                                                               if (_thisUserPass == FALSE && _thisUserFulfilled == FALSE) {
-match := ImageSearch(
-               &matchedX
-               , &matchedY
-               , getScreenXbyWindowPercentage('10%')
-               , getScreenYbyWindowPercentage('60%')
-               , getScreenXbyWindowPercentage('90%')
-               , getScreenYbyWindowPercentage('80%')
-               , '*100 ' . _imageFile_userDetailDecline)
-           if (match == 1) {
-targetX := matchedX - targetWindowX
-             targetY := matchedY - targetWindowY
-             ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
-             _thisUserFulfilled := TRUE
-             failCount := 0
-           }
-           else if (match == 0) {
-failCount := failCount + 1
-               ControlClick(targetControlHandle, targetWindowHwnd, , 'WU', 3, 'NA', ,) ;
-           }
-                                                               }
-                                                               if (_thisUserPass == TRUE && _thisUserFulfilled == TRUE) {
-match := ImageSearch(
-               &matchedX,
-               &matchedY,
-               getScreenXbyWindowPercentage('10%'),
-               getScreenYbyWindowPercentage('60%'),
-               getScreenXbyWindowPercentage('90%'),
-               getScreenYbyWindowPercentage('80%'),
-               '*50 ' . _imageFile_userDetailFriendNow)
-           if (match == 1) {
-               ControlClick('X' . getWindowXbyWindowPercentage('50%') . ' Y' .
-                       getWindowYbyWindowPercentage(
-                           '95%'), targetWindowHwnd, , 'Left', 1, 'NA', ,)
-                   SendUiMsg(_currentLocale.NextApproval)
-                   _currentLogic := "01"
-                   failCount := 0
-           }
-           else if (match == 0) {
-               ; _delayXLong() ; // Quando o usuário cancela a solicitação durante o processo de entrada, ocorre um longo carregamento devido a um problema no servidor da Nintendo
-               ; Adicionar um atraso torna o ciclo geral mais lento / É mais vantajoso reiniciar o ciclo novamente
-                   match := ImageSearch(
-                           &matchedX
-                           , &matchedY
-                           , getScreenXbyWindowPercentage('25%')
-                           , getScreenYbyWindowPercentage('43%')
-                           , getScreenXbyWindowPercentage('75%')
-                           , getScreenYbyWindowPercentage('52%')
-                           , '*50 ' . _imageFile_userDetailRequestNotFound)
-                   if (match == 1) {
-                       SendUiMsg(_currentLocale.ErrorSolicitationNotFound)
-                           ControlClick(
-                                   'X' . getWindowXbyWindowPercentage('50%') . ' Y' . getWindowYbyWindowPercentage(
-                                       '68%')
-                                   , targetWindowHwnd, , 'Left', 1, 'NA', ,)
-                           delayShort()
-                           ControlClick('X' . getWindowXbyWindowPercentage('50%') . ' Y' .
-                                   getWindowYbyWindowPercentage('95%'), targetWindowHwnd, , 'Left', 1, 'NA', ,)
-                           _currentLogic := "01"
-                           failCount := 0
-                           delayLong()
-                   }
-                   else if (match == 0) {
-                       SendUiMsg(_currentLocale.WaitingNextStep)
-                           failCount := failCount + 1
-                   }
-           }
-                                                               }
-                                                               if (_thisUserPass == FALSE && _thisUserFulfilled == TRUE) {
-match := ImageSearch(
-               &matchedX,
-               &matchedY,
-               getScreenXbyWindowPercentage('12%'),
-               getScreenYbyWindowPercentage('70%'),
-               getScreenXbyWindowPercentage('88%'),
-               getScreenYbyWindowPercentage('77%'),
-               '*50 ' . _imageFile_userDetailRequestFriend)
-           if (match == 1) {
-               _clickCloseModalButton()
-                   SendUiMsg(_currentLocale.RefusalSucceded)
-                   _currentLogic := "01"
-                   failCount := 0
-                   delayShort()
-           }
-           else if (match == 0) {
-failCount := failCount + 1
-           }
-                                                               }
-                                                               if (failCount >= 5) {
-                                                                   SendUiMsg(_currentLocale.UserScreenFail)
-                                                                       _currentLogic := "01"
-                                                                       failCount := 0
-                                                                       SendInput "{esc}"
-                                                                       InitLocation("RequestList")
-                                                               }
-
-                                                               ;; Início da lógica de rejeição
+                                              ;; Início da lógica de rejeição
                                   case "D00":
-                                                                   ;; Redefinir valores de ambiente
-                                                                       _delayConfig := _userIni.Delay
-                                                                       _instanceNameConfig := _userIni.InstanceName
-                                                                       _acceptingTermConfig := _userIni.AcceptingTerm * 60000
-                                                                       _deletingTermConfig := _userIni.BufferTerm * 60000
-                                                                       _localeConfig := _userIni.Locale
+                                              ;; Redefinir valores de ambiente
+                                                  _delayConfig := _userIni.Delay
+                                                  _instanceNameConfig := _userIni.InstanceName
+                                                  _acceptingTermConfig := _userIni.AcceptingTerm * 60000
+                                                  _deletingTermConfig := _userIni.BufferTerm * 60000
+                                                  _localeConfig := _userIni.Locale
 
-                                                                       SendUiMsg("🗑️" . _currentLocale.DeletingFriendBegin)
-                                                                       caseDescription := _currentLocale.GoToFriendDeleteMenu
-                                                                       SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
-                                                                       failCount := 0
-                                                                       _clickCloseModalButton()
-                                                                       delayXLong()
-                                                                       match := ImageSearch(
-                                                                               &matchedX
-                                                                               , &matchedY
-                                                                               , getScreenXbyWindowPercentage('2%')
-                                                                               , getScreenYbyWindowPercentage('80%')
-                                                                               , getScreenXbyWindowPercentage('24%')
-                                                                               , getScreenYbyWindowPercentage('90%')
-                                                                               , '*100 ' . _imageFile_friendMenuButton)
-                                                                       if (match == 1) {
-                                                                           ; _statusMsg("match = 1")
-                                                                               targetX := matchedX - targetWindowX + 10
-                                                                               targetY := matchedY - targetWindowY + 10
-                                                                               ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
-                                                                               _currentLogic := "D01"
-                                                                               delayLong()
-                                                                       }
-                                                                       else if (match == 0) {
-                                                                           ; _statusMsg("match = 0")
-                                                                       }
+                                                  SendUiMsg("🗑️" . _currentLocale.DeletingFriendBegin)
+                                                  caseDescription := _currentLocale.GoToFriendDeleteMenu
+                                                  SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
+                                                  failCount := 0
+                                                  InitLocation("FriendList")
+                                                  delayXLong()
+                                                  _currentLogic := "D01"
 
                                   case "D01":
-                                                                   caseDescription := _currentLocale.FriendListVerify
-                                                                       SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
-                                                                       delayShort()
-                                                                       static globalRetryCount := 0 ; Para encerrar o aplicativo em caso de loop infinito
+                                              if (userDelIndex <= userDelCount) {
 
-                                                                       match := ImageSearch(
-                                                                               &matchedX
-                                                                               , &matchedY
-                                                                               , getScreenXbyWindowPercentage('56%')
-                                                                               , getScreenYbyWindowPercentage('20%')
-                                                                               , getScreenXbyWindowPercentage('98%')
-                                                                               , getScreenYbyWindowPercentage('44%')
-                                                                               , '*100 ' . _imageFile_friendListCard)
-                                                                       if (match == 1) {
+                                              caseDescription := _currentLocale.FriendListVerify
+                                                  SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
+                                                  delayShort()
+                                                  static globalRetryCount := 0
+
+                                                  match := ImageSearch(
+                                                          &matchedX,
+                                                          &matchedY,
+                                                          getScreenXbyWindowPercentage('56%'),
+                                                          getScreenYbyWindowPercentage('20%'),
+                                                          getScreenXbyWindowPercentage('98%'),
+                                                          getScreenYbyWindowPercentage('44%'),
+                                                          '*100 ' . _imageFile_friendListCard)
+                                                  if (match == 1) {
 globalRetryCount := 0
-                      ; _statusMsg("match = 1")
                       targetX := matchedX - targetWindowX
                       targetY := matchedY - targetWindowY
-                      ControlClick('X' . targetX . ' Y' . targetY + 50, targetWindowHwnd, , 'Left', 1, 'NA', ,)
+                      ; Use nextUser to adjust the Y position (default to 0 if not set)
+                      static nextUser := 0
+                      global userIncrement := 182
+                      ControlClick('X' . targetX . ' Y' . (targetY + 50 + nextUser), targetWindowHwnd, , 'Left', 1, 'NA', ,)
                       delayShort()
-                      ControlClick('X' . targetX . ' Y' . targetY + 50, targetWindowHwnd, , 'Left', 1, 'NA', ,)
+                      ControlClick('X' . targetX . ' Y' . (targetY + 50 + nextUser), targetWindowHwnd, , 'Left', 1, 'NA', ,)
                       _currentLogic := "D02"
                       _thisUserDeleted := FALSE
                       failCount := 0
                       delayLong()
-                                                                       }
-                                                                       else if (match == 0) {
-                                                                           delayLong()
-                                                                               delayLong()
-                                                                               match := ImageSearch(
-                                                                                       &matchedX
-                                                                                       , &matchedY
-                                                                                       , getScreenXbyWindowPercentage('20%')
-                                                                                       , getScreenYbyWindowPercentage('5%')
-                                                                                       , getScreenXbyWindowPercentage('80%')
-                                                                                       , getScreenYbyWindowPercentage('40%')
-                                                                                       , '*50 ' . _imageFile_friendCountEmpty)
-                                                                               if (match == 1) {
-                                                                                   SendUiMsg(_currentLocale.AllFriendsDeleted)
-                                                                                       PhaseToggler()
-                                                                                       globalRetryCount := 0 
-                                                                                       delayXLong()
-                                                                                       FinishRun() 
-                                                                               }
-                                                                               else if (match == 0) {
-failCount := failCount + 1
-                                                                               }
-                                                                           if (failCount >= 5) {
+                                                  } else if (match == 0) {
+                                                      delayLong()
+                                                          delayLong()
+                                                          match := ImageSearch(
+                                                                  &matchedX,
+                                                                  &matchedY,
+                                                                  getScreenXbyWindowPercentage('20%'),
+                                                                  getScreenYbyWindowPercentage('5%'),
+                                                                  getScreenXbyWindowPercentage('80%'),
+                                                                  getScreenYbyWindowPercentage('40%'),
+                                                                  '*50 ' . _imageFile_friendCountEmpty)
+                                                          if (match == 1) {
+                                                              SendUiMsg(_currentLocale.AllFriendsDeleted)
+                                                                  PhaseToggler()
+                                                                  globalRetryCount := 0 
+                                                                  delayXLong()
+                                                                  FinishRun() 
+                                                          } else if (match == 0) {
+                                                               SendUiMsg("Can't get friend list, fail try count: " failCount)
+                                                               failCount := failCount + 1
+                                                          }
+                                                      if (failCount >= 5) {
 globalRetryCount := globalRetryCount + 1
                       if (globalRetryCount > 5) {
                           SendUiMsg(_currentLocale.CriticalFailureExit)
@@ -1263,44 +1004,99 @@ globalRetryCount := globalRetryCount + 1
                       }
                   SendUiMsg(_currentLocale.RedefiningScreen)
                       failCount := 0
+                      nextUser := 0  ; Reset nextUser on failure
                       InitLocation('FriendList')
-                                                                           }
-                                                                       }
+                                                      }
+                                                  }
+
+} else {
+          SendUiMsg("all accounts in userdel.txt processed, exit.")
+          FinishRun()
+}
+
 
                                   case "D02":
-                                                                   caseDescription := _currentLocale.ScreenFriendEntering
-                                                                       SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
-                                                                       delayShort()
-                                                                       match := ImageSearch(
-                                                                               &matchedX,
-                                                                               &matchedY,
-                                                                               getScreenXbyWindowPercentage('12%'),
-                                                                               getScreenYbyWindowPercentage('70%'),
-                                                                               getScreenXbyWindowPercentage('88%'),
-                                                                               getScreenYbyWindowPercentage('77%'),
-                                                                               '*50 ' . _imageFile_userDetailFriendNow)
-                                                                       if (match == 1) {
-                                                                           ; _statusMsg("match = 1")
-                                                                               targetX := matchedX - targetWindowX + 5
-                                                                               targetY := matchedY - targetWindowY + 5
-                                                                               ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
-                                                                               _currentLogic := "D03"
-                                                                               delayLong()
-                                                                       }
-                                                                       else if (match == 0) {
-failCount := failCount + 1
-                                                                       }
-                                                                   if (failCount >= 5) {
-                                                                       SendUiMsg(_currentLocale.FailureDeleteFriendCall)
-                                                                           _currentLogic := "D01"
-                                                                           failCount := 0
-                                                                           InitLocation("FriendList")
-                                                                   }
+
+                                              caseDescription := _currentLocale.ScreenFriendEntering
+                                                  SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
+                                                  delayXLong()  ; Increased delay to ensure text renders
+
+                                                  ; Perform OCR to check for text in the user detail area
+                                                  ocrX := getScreenXbyWindowPercentage('62%')
+                                                  ocrY := getScreenYbyWindowPercentage('9%')
+                                                  ocrW := getScreenXbyWindowPercentage('96%') - ocrX
+                                                  ocrH := getScreenYbyWindowPercentage('13%') - ocrY
+                                                  ocrText := OCR([ocrX, ocrY, ocrW, ocrH], "eng")
+                                                  ocrText := RegExReplace(ocrText, "[^0-9]", "")
+
+                                                  SendUiMsg("OCR Capture Area: X=" . ocrX . ", Y=" . ocrY . ", Width=" . ocrW . ", Height=" . ocrH)
+                                                  SendUiMsg("OCR Result: '" . ocrText . "'")
+
+                                                  global userDelArray
+                                                  canDelete := false
+                                                  if (ocrText != "") {
+                                                      for delId in userDelArray {
+                                                          if (InStr(ocrText, delId)) {
+canDelete := true
+               SendUiMsg("Match found: '" . delId . "' in OCR text, proceeding with deletion")
+               break
+                                                          }
+                                                      }
+                                                      if (!canDelete) {
+                                                          SendUiMsg("No matching ID found in userdel.txt for OCR text: '" . ocrText . "'")
+                                                      }
+                                                  } else {
+                                                      SendUiMsg("OCR returned empty result, skipping user")
+                                                  }
+
+                                              if (canDelete) {
+match := ImageSearch(
+               &matchedX,
+               &matchedY,
+               getScreenXbyWindowPercentage('12%'),
+               getScreenYbyWindowPercentage('70%'),
+               getScreenXbyWindowPercentage('88%'),
+               getScreenYbyWindowPercentage('77%'),
+               '*50 ' . _imageFile_userDetailFriendNow)
+           if (match == 1) {
+targetX := matchedX - targetWindowX + 5
+             targetY := matchedY - targetWindowY + 5
+             ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
+             SendUiMsg("Clicked to delete at X=" . targetX . ", Y=" . targetY)
+             _currentLogic := "D03"
+             delayXLong()
+           } else if (match == 0) {
+               failCount := failCount + 1
+               SendUiMsg("ImageSearch failed to find userDetailFriendNow")
+               _clickCloseModalButton()
+           }
+                                              } else {
+                                                  SendUiMsg("Skipping deletion, moving to next user")
+                                                      static nextUser := 0
+                                                      nextUser += userIncrement
+                                                      _currentLogic := "D01"
+                                                      failCount := 0
+                                                      _clickCloseModalButton()
+                                                      delayLong()
+
+                                              }
+                                               
+                                              SendUiMsg("Total " userDelIndex " accounts from userdel.txt processed!")
+                                              userDelIndex++
+
+                                              if (failCount >= 5) {
+                                                  SendUiMsg("Fail count reached, during delete") 
+                                                      _currentLogic := "D01"
+                                                      failCount := 0
+                                                      nextUser := 0
+                                                      InitLocation("FriendList")
+                                              }
+
 
                                   case "D03":
-                                                                   caseDescription := _currentLocale.DeletingFriendBegin
-                                                                       SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
-                                                                       if (_thisUserDeleted == FALSE) {
+                                              caseDescription := _currentLocale.DeletingFriendBegin
+                                                  SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
+                                                  if (_thisUserDeleted == FALSE) {
 match := ImageSearch(
                &matchedX,
                &matchedY,
@@ -1310,75 +1106,32 @@ match := ImageSearch(
                getScreenYbyWindowPercentage('74%'),
                '*50 ' . _imageFile_removeFriendConfirm)
            if (match == 1) {
-               ; _statusMsg("match = 1")
                    targetX := matchedX - targetWindowX + 50
                    targetY := matchedY - targetWindowY + 20
                    ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
                    _thisUserDeleted := TRUE
-                   ; _statusMsg(_currentLocale.DeletingFriendsSuccess)
                    delayLong()
            }
            else if (match == 0) {
-match := ImageSearch(
-               &matchedX,
-               &matchedY,
-               getScreenXbyWindowPercentage('50%'),
-               getScreenYbyWindowPercentage('62%'),
-               getScreenXbyWindowPercentage('98%'),
-               getScreenYbyWindowPercentage('74%'),
-               '*50 ' . _imageFile_removeFriendConfirmSpanish)
-           if (match == 1) {
-               ; _statusMsg("match = 1")
-                   targetX := matchedX - targetWindowX + 50
-                   targetY := matchedY - targetWindowY + 20
-                   ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
-                   _thisUserDeleted := TRUE
-                   ; _statusMsg(_currentLocale.DeletingFriendsSuccess)
-                   delayLong()
+               SendUiMsg(_currentLocale.FailureDeleteFriendCall)
+                   _currentLogic := "D01"
+                   failCount := 0
+                   SendInput "{esc}"
+                   InitLocation("FriendList")
            }
-           else if (match == 0) {
-failCount := failCount + 1
-           }
-           }
-       if (failCount >= 5) {
-           SendUiMsg(_currentLocale.FailureDeleteFriendCall)
-               _currentLogic := "D01"
-               failCount := 0
-               SendInput "{esc}"
-               InitLocation("FriendList")
-       }
-                                                                       }
-                                                                       else if (_thisUserDeleted == TRUE) {
-                                                                           ; _statusMsg(_currentLocale.TryingToFind
-                                                                                   ; . getScreenXbyWindowPercentage('12%')
-                                                                                   ; . " " . getScreenYbyWindowPercentage('70%')
-                                                                                   ; . " " . getScreenXbyWindowPercentage('88%')
-                                                                                   ; . " " . getScreenYbyWindowPercentage('77%'))
-                                                                               delayShort()
-                                                                               match := ImageSearch(
-                                                                                       &matchedX,
-                                                                                       &matchedY,
-                                                                                       getScreenXbyWindowPercentage('12%'),
-                                                                                       getScreenYbyWindowPercentage('70%'),
-                                                                                       getScreenXbyWindowPercentage('88%'),
-                                                                                       getScreenYbyWindowPercentage('77%'),
-                                                                                       '*50 ' . _imageFile_userDetailRequestFriend)
-                                                                               if (match == 1) {
-                                                                                   _clickCloseModalButton()
-                                                                                       _currentLogic := "D01"
-                                                                                       delayLong()
-                                                                               }
-                                                                               else if (match == 0) {
-failCount := failCount + 1
-                                                                               }
-                                                                           if (failCount >= 5) {
-                                                                               SendUiMsg(_currentLocale.ScreenTransitionFailure)
-                                                                                   _currentLogic := "D01"
-                                                                                   failCount := 0
-                                                                                   SendInput "{esc}"
-                                                                                   InitLocation("FriendList")
-                                                                           }
-                                                                       }
+                                                  }
+                                                  if (_thisUserDeleted == TRUE) {
+                                                          _currentLogic := "D01"
+                                                          delayLong()
+                                                          _clickCloseModalButton()
+                                                          if (failCount >= 5) {
+                                                              SendUiMsg(_currentLocale.ScreenTransitionFailure)
+                                                                  _currentLogic := "D01"
+                                                                  failCount := 0
+                                                                  SendInput "{esc}"
+                                                                  InitLocation("FriendList")
+                                                          }
+                                                  }
 
                               }
                       }
@@ -1458,6 +1211,7 @@ _clickCloseModalButton() {
     ControlClick(
             'X' . getWindowXbyWindowPercentage('50%') . ' Y' . getWindowYbyWindowPercentage('95%')
             , targetWindowHwnd, , 'Left', 1, 'NA', ,)
+    delayXLong()
 }
 
 _clickSafeArea() {
@@ -1619,7 +1373,7 @@ FinishRun() {
     global _isRunning
         _isRunning := FALSE
         wv.ExecuteScriptAsync("SwitchUIMode('" FALSE "')")
-        ; SendUiMsg("⏹️" . _currentLocale.OperationEnd)
+        Gdip_Shutdown(pToken)  ; Shut down Gdip with the token
 }
 
 TogglePauseMode() {
