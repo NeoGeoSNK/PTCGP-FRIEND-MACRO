@@ -956,13 +956,16 @@ globalRetryCount := 0
                       targetX := matchedX - targetWindowX
                       targetY := matchedY - targetWindowY
                       ; Use nextUser to adjust the user position from friend list.
+                      if (nextUser > userIncrement * 2) {
+                          SendUiMsg("Only 3 friends in a screen, reset position " . (nextUser / userIncrement) + 1 . " to 1")
+                          nextUser := 0
+                      }
                       SendUiMsg("Select friend from " . (nextUser / userIncrement) + 1 . " position")
                       ControlClick('X' . targetX . ' Y' . (targetY + 50 + nextUser), targetWindowHwnd, , 'Left', 1, 'NA', ,)
                       delayShort()
                       ControlClick('X' . targetX . ' Y' . (targetY + 50 + nextUser), targetWindowHwnd, , 'Left', 1, 'NA', ,)
                       _currentLogic := "D02"
                       _thisUserDeleted := FALSE
-                      failCount := 0
                       delayLong()
                      } else if (match == 0) {
                          SendUiMsg("Checking friend count.")
@@ -987,7 +990,7 @@ globalRetryCount := 0
                                      failCount := failCount + 1
                              }
                          if (failCount >= 5) {
-globalRetryCount := globalRetryCount + 1
+                         globalRetryCount := globalRetryCount + 1
                       if (globalRetryCount > 5) {
                           SendUiMsg(_currentLocale.CriticalFailureExit)
                               ExitApp
@@ -1050,11 +1053,7 @@ canDelete := true
                                                                   SendUiMsg("Only one friend left, exit")
                                                                       FinishRun() 
                                                                       return
-                                                              } else {
-                                                                  SendUiMsg("Reset user location: " . (nextUser / userIncrement) + 1 . " to 1 and retry")
-                                                                      nextUser := 0
                                                               }
-
                                                       }
 
                                                   if (canDelete) {
