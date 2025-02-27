@@ -45,6 +45,7 @@ global _imageFile_friendMenuButton := A_ScriptDir . "\asset\match\friendsMenuBut
 global _imageFile_friendListCard := A_ScriptDir . "\asset\match\friendListCard.png"
 global _imageFile_friendListEmpty := A_ScriptDir . "\asset\match\friendListEmpty.png"
 global _imageFile_friendCountEmpty := A_ScriptDir . "\asset\match\friendCountEmpty.png"
+global _imageFile_friendCount1 := A_ScriptDir . "\asset\match\friendCount1.png"
 global _imageFile_removeFriendConfirm := A_ScriptDir . "\asset\match\removeFriendConfirm.png"
 global _imageFile_removeFriendConfirmSpanish := A_ScriptDir . "\asset\match\removeFriendConfirmSpanish.png"
 global _imageFile_appIcon := A_ScriptDir . "\asset\image\_app_Icon.png"
@@ -666,35 +667,34 @@ if (_debug == TRUE) {
 }
 
 
-    ; Function to read user codes from file
-    ReadUserCodesFromFile(fileName) {
-        local userCodes := []
-            local filePath := fileName
-            if !FileExist(filePath) {
-                SendUiMsg("Error: " . filePath . " not found. Please create this file.")
-                    return userCodes ; Return empty array
+; Function to read user codes from file
+ReadUserCodesFromFile(fileName) {
+    local userCodes := []
+        local filePath := fileName
+        if !FileExist(filePath) {
+            SendUiMsg("Error: " . filePath . " not found. Please create this file.")
+                return userCodes ; Return empty array
+        }
+    local fileContent := FileRead(filePath)
+        userCodes := StrSplit(fileContent, "`n", "`r")
+        ; Remove empty lines and trim whitespace
+        Loop userCodes.Length {
+            userCodes[A_Index] := Trim(userCodes[A_Index])
+        }
+    ; Filter out empty entries
+        filteredCodes := []
+        for code in userCodes {
+            if (code != "") {
+                filteredCodes.Push(code)
             }
-        local fileContent := FileRead(filePath)
-            userCodes := StrSplit(fileContent, "`n", "`r")
-            ; Remove empty lines and trim whitespace
-            Loop userCodes.Length {
-                userCodes[A_Index] := Trim(userCodes[A_Index])
-            }
-        ; Filter out empty entries
-            filteredCodes := []
-            for code in userCodes {
-                if (code != "") {
-                    filteredCodes.Push(code)
-                }
-            }
-        return filteredCodes
-    }
+        }
+    return filteredCodes
+}
 
 
 
 
 
-pToken := Gdip_Startup()  ; Initialize Gdip and store the token
 
 ; Define the OCR function
 OCR(area, lang) {
@@ -703,7 +703,6 @@ x := area[1]
        w := area[3]
        h := area[4]
        pBitmap := Gdip_BitmapFromScreen(x "|" y "|" w "|" h)
-
        ; Use a unique filename with timestamp to avoid overwriting
        timestamp := FormatTime(A_Now, "yyyyMMdd_HHmmss")
        tempFile := "capture_" . timestamp . ".png"
@@ -714,19 +713,10 @@ x := area[1]
        RunWait "tesseract " . tempFile . " output -l " . lang
        T := FileRead("output.txt")
 
-       ; Keep tempFile (don’t delete it); delete only the Tesseract output
+       FileDelete tempFile
        FileDelete "output.txt"
-
-       SendUiMsg("Captured image saved as: " . tempFile)
        return T
 }
-
-
-
-
-
-
-
 
 
 _main(_currentLogic := "00") {
@@ -742,6 +732,8 @@ _main(_currentLogic := "00") {
         global userDelArray  ; Add global for deletion list
         global userDelIndex
         global userDelCount
+
+        global pToken := Gdip_Startup()  ; Initialize Gdip for OCR useage and store the token
 
         userCodesArray := ReadUserCodesFromFile("usercodes.txt")  ; For adding friends
         userCodeIndex := 1
@@ -810,13 +802,6 @@ targetWindowHwnd := WinExist(_instanceNameConfig)
                           }
 
                           WinGetPos(&targetWindowX, &targetWindowY, &targetWindowWidth, &targetWindowHeight, targetWindowHwnd)
-
-                              SendUiMsg("targetWindowX= " . targetWindowX)
-                              SendUiMsg("targetWindowY= " . targetWindowY)
-                              SendUiMsg("targetWindowWidth= " . targetWindowWidth)
-                              SendUiMsg("targetWindowHeight= " . targetWindowHeight)
-                              SendUiMsg("targetWindowHwnd= " . targetWindowHwnd)
-
                               switch _currentLogic {
                                   ; 00. 화면 초기화
                                   case "00":
@@ -866,7 +851,7 @@ targetX := matchedX - targetWindowX
                      , "*50 " . _imageFile_friendSearch)
 
              if (friendSearchFound == 1) {
-                 SendUiMsg("#######Friend search button located!")
+                 SendUiMsg("Friend search button located!")
                      targetTextX := textboxX - targetWindowX
                      targetTextY := textboxY - targetWindowY
 
@@ -880,7 +865,7 @@ A_Clipboard := currentCode ; Set clipboard to the user code
                  Send "{Enter}"
                  delayLong()
                  ControlClick("X" . targetTextX . " Y" . targetTextY, targetWindowHwnd, "", "Left", 1, "NA")
-                 SendUiMsg("#######Start searching with code:" A_Clipboard)
+                 SendUiMsg("Start searching with code:" A_Clipboard)
                  delayXLong()
                  delayXLong()
 
@@ -894,35 +879,36 @@ A_Clipboard := currentCode ; Set clipboard to the user code
                          , "*50 " . _imageFile_sendRequest)
 
                  if (sendRequestFound == 1) {
-                     SendUiMsg("#######Send Request located!")
+                     SendUiMsg("Send Friend Request located!")
                          targetReqX := sendRequestX - targetWindowX
                          targetReqY := sendRequestY - targetWindowY
                          ControlClick("X" . targetReqX . " Y" . targetReqY, targetWindowHwnd, "", "Left", 1, "NA")
                  } else {
-                     SendUiMsg("#######Can't find send request button")
+                     SendUiMsg("####Can't find send request button")
                  }
 
              delayXLong()
 
                      } else {
-                         SendUiMsg("#######Warning: Empty user code in usercodes.txt at line " . userCodeIndex . ". Skipping.")
+                         SendUiMsg("####Warning: Empty user code in usercodes.txt at line " . userCodeIndex . ". Skipping.")
                      }
 
              } else {
-                 SendUiMsg("#######Search friend text box not found!")
+                 SendUiMsg("####Search friend text box not found!")
                      ; You might want to add error handling or a retry mechanism here.
              }
 
                                                   } else if (match == 0) {
-                                                      SendUiMsg("#######Can't find add friend icon")
+                                                      SendUiMsg("####Can't find add friend icon")
                                                   }
 
-                                              SendUiMsg("#######Processing user: " . userCodeIndex . " done")
+                                              SendUiMsg("Processing user: " . userCodeIndex . " done")
                                                   userCodeIndex++
 
                                           } else {
-                                              SendUiMsg("#######All user codes processed.")
+                                              SendUiMsg("All user codes processed.")
                                                   FinishRun()
+                                                  return
                                           }
 
                                           InitLocation("FriendList")
@@ -930,7 +916,9 @@ A_Clipboard := currentCode ; Set clipboard to the user code
 
                                               ;; Início da lógica de rejeição
                                   case "D00":
-                                              ;; Redefinir valores de ambiente
+                                              static nextUser := 0
+                                                  global userIncrement := 182
+                                                  ;; Redefinir valores de ambiente
                                                   _delayConfig := _userIni.Delay
                                                   _instanceNameConfig := _userIni.InstanceName
                                                   _acceptingTermConfig := _userIni.AcceptingTerm * 60000
@@ -946,28 +934,28 @@ A_Clipboard := currentCode ; Set clipboard to the user code
                                                   _currentLogic := "D01"
 
                                   case "D01":
-                                              if (userDelIndex <= userDelCount) {
 
-                                              caseDescription := _currentLocale.FriendListVerify
-                                                  SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
-                                                  delayShort()
-                                                  static globalRetryCount := 0
+                                                  if (userDelIndex <= userDelCount) {
 
-                                                  match := ImageSearch(
-                                                          &matchedX,
-                                                          &matchedY,
-                                                          getScreenXbyWindowPercentage('56%'),
-                                                          getScreenYbyWindowPercentage('20%'),
-                                                          getScreenXbyWindowPercentage('98%'),
-                                                          getScreenYbyWindowPercentage('44%'),
-                                                          '*100 ' . _imageFile_friendListCard)
-                                                  if (match == 1) {
+caseDescription := _currentLocale.FriendListVerify
+                     SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
+                     delayShort()
+                     static globalRetryCount := 0
+
+                     match := ImageSearch(
+                             &matchedX,
+                             &matchedY,
+                             getScreenXbyWindowPercentage('56%'),
+                             getScreenYbyWindowPercentage('20%'),
+                             getScreenXbyWindowPercentage('98%'),
+                             getScreenYbyWindowPercentage('44%'),
+                             '*100 ' . _imageFile_friendListCard)
+                     delayXLong()
+                     if (match == 1) {
 globalRetryCount := 0
                       targetX := matchedX - targetWindowX
                       targetY := matchedY - targetWindowY
                       ; Use nextUser to adjust the Y position (default to 0 if not set)
-                      static nextUser := 0
-                      global userIncrement := 182
                       ControlClick('X' . targetX . ' Y' . (targetY + 50 + nextUser), targetWindowHwnd, , 'Left', 1, 'NA', ,)
                       delayShort()
                       ControlClick('X' . targetX . ' Y' . (targetY + 50 + nextUser), targetWindowHwnd, , 'Left', 1, 'NA', ,)
@@ -975,28 +963,29 @@ globalRetryCount := 0
                       _thisUserDeleted := FALSE
                       failCount := 0
                       delayLong()
-                                                  } else if (match == 0) {
-                                                      delayLong()
-                                                          delayLong()
-                                                          match := ImageSearch(
-                                                                  &matchedX,
-                                                                  &matchedY,
-                                                                  getScreenXbyWindowPercentage('20%'),
-                                                                  getScreenYbyWindowPercentage('5%'),
-                                                                  getScreenXbyWindowPercentage('80%'),
-                                                                  getScreenYbyWindowPercentage('40%'),
-                                                                  '*50 ' . _imageFile_friendCountEmpty)
-                                                          if (match == 1) {
-                                                              SendUiMsg(_currentLocale.AllFriendsDeleted)
-                                                                  PhaseToggler()
-                                                                  globalRetryCount := 0 
-                                                                  delayXLong()
-                                                                  FinishRun() 
-                                                          } else if (match == 0) {
-                                                               SendUiMsg("Can't get friend list, fail try count: " failCount)
-                                                               failCount := failCount + 1
-                                                          }
-                                                      if (failCount >= 5) {
+                     } else if (match == 0) {
+                         SendUiMsg("Checking friend count.")
+                             delayXLong()
+                             match := ImageSearch(
+                                     &matchedX,
+                                     &matchedY,
+                                     getScreenXbyWindowPercentage('20%'),
+                                     getScreenYbyWindowPercentage('5%'),
+                                     getScreenXbyWindowPercentage('80%'),
+                                     getScreenYbyWindowPercentage('40%'),
+                                     '*50 ' . _imageFile_friendCountEmpty)
+                             if (match == 1) {
+                                 SendUiMsg(_currentLocale.AllFriendsDeleted)
+                                     PhaseToggler()
+                                     globalRetryCount := 0 
+                                     FinishRun() 
+                                     return
+                             } else if (match == 0) {
+
+                                 SendUiMsg("####Can't get friend list, fail try count: " failCount)
+                                     failCount := failCount + 1
+                             }
+                         if (failCount >= 5) {
 globalRetryCount := globalRetryCount + 1
                       if (globalRetryCount > 5) {
                           SendUiMsg(_currentLocale.CriticalFailureExit)
@@ -1006,50 +995,68 @@ globalRetryCount := globalRetryCount + 1
                       failCount := 0
                       nextUser := 0  ; Reset nextUser on failure
                       InitLocation('FriendList')
-                                                      }
-                                                  }
+                         }
+                     }
 
-} else {
-          SendUiMsg("all accounts in userdel.txt processed, exit.")
-          FinishRun()
-}
+                                                  } else {
+                                                      SendUiMsg("All accounts in userdel.txt processed, exit.")
+                                                          FinishRun()
+                                                          return
+                                                  }
 
 
                                   case "D02":
 
-                                              caseDescription := _currentLocale.ScreenFriendEntering
-                                                  SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
-                                                  delayXLong()  ; Increased delay to ensure text renders
+                                                  caseDescription := _currentLocale.ScreenFriendEntering
+                                                      SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
+                                                      delayXLong()  ; Increased delay to ensure text renders
 
-                                                  ; Perform OCR to check for text in the user detail area
-                                                  ocrX := getScreenXbyWindowPercentage('62%')
-                                                  ocrY := getScreenYbyWindowPercentage('9%')
-                                                  ocrW := getScreenXbyWindowPercentage('96%') - ocrX
-                                                  ocrH := getScreenYbyWindowPercentage('13%') - ocrY
-                                                  ocrText := OCR([ocrX, ocrY, ocrW, ocrH], "eng")
-                                                  ocrText := RegExReplace(ocrText, "[^0-9]", "")
+                                                      ; Perform OCR to check for text in the user detail area
+                                                      ocrX := getScreenXbyWindowPercentage('62%')
+                                                      ocrY := getScreenYbyWindowPercentage('9%')
+                                                      ocrW := getScreenXbyWindowPercentage('96%') - ocrX
+                                                      ocrH := getScreenYbyWindowPercentage('13%') - ocrY
+                                                      ocrText := OCR([ocrX, ocrY, ocrW, ocrH], "eng")
+                                                      SendUiMsg("OCR capture result: '" . ocrText . "'")
+                                                      ocrText := RegExReplace(ocrText, "[^0-9]", "")
+                                                      SendUiMsg("OCR extract friend codes result: '" . ocrText . "'")
 
-                                                  SendUiMsg("OCR Capture Area: X=" . ocrX . ", Y=" . ocrY . ", Width=" . ocrW . ", Height=" . ocrH)
-                                                  SendUiMsg("OCR Result: '" . ocrText . "'")
-
-                                                  global userDelArray
-                                                  canDelete := false
-                                                  if (ocrText != "") {
-                                                      for delId in userDelArray {
-                                                          if (InStr(ocrText, delId)) {
+                                                      global userDelArray
+                                                      canDelete := false
+                                                      if (ocrText != "") {
+                                                          for delId in userDelArray {
+                                                              if (InStr(ocrText, delId)) {
 canDelete := true
-               SendUiMsg("Match found: '" . delId . "' in OCR text, proceeding with deletion")
+               SendUiMsg("Match found: '" . delId . "' in userdel.txt, proceeding with deletion")
                break
+                                                              }
                                                           }
-                                                      }
-                                                      if (!canDelete) {
-                                                          SendUiMsg("No matching ID found in userdel.txt for OCR text: '" . ocrText . "'")
-                                                      }
-                                                  } else {
-                                                      SendUiMsg("OCR returned empty result, skipping user")
-                                                  }
+                                                          if (!canDelete) {
+                                                              _clickCloseModalButton() 
+                                                                  SendUiMsg("No matching ID found in userdel.txt. User: '" . ocrText . "' was kept")
+                                                          }
+                                                      } else {
+                                                          SendUiMsg("OCR returned empty result, not in friend detail page, try to get friend count")
+                                                              matchOnly1 := ImageSearch(
+                                                                      &matchedX,
+                                                                      &matchedY,
+                                                                      getScreenXbyWindowPercentage('32%'),
+                                                                      getScreenYbyWindowPercentage('6%'),
+                                                                      getScreenXbyWindowPercentage('74%'),
+                                                                      getScreenYbyWindowPercentage('31%'),
+                                                                      '*50 ' . _imageFile_friendCount1)
+                                                              if (matchOnly1 == 1) {
+                                                                  SendUiMsg("Only one friend left, exit")
+                                                                      FinishRun() 
+                                                                      return
+                                                              } else {
+                                                                  SendUiMsg("Reset user location: " . (nextUser / userIncrement) + 1 . " to 1 and retry")
+                                                                      nextUser := 0
+                                                              }
 
-                                              if (canDelete) {
+                                                      }
+
+                                                  if (canDelete) {
 match := ImageSearch(
                &matchedX,
                &matchedY,
@@ -1058,45 +1065,46 @@ match := ImageSearch(
                getScreenXbyWindowPercentage('88%'),
                getScreenYbyWindowPercentage('77%'),
                '*50 ' . _imageFile_userDetailFriendNow)
+           delayXLong()
            if (match == 1) {
 targetX := matchedX - targetWindowX + 5
              targetY := matchedY - targetWindowY + 5
              ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
-             SendUiMsg("Clicked to delete at X=" . targetX . ", Y=" . targetY)
+             SendUiMsg("Click unfriend from friend detail")
              _currentLogic := "D03"
              delayXLong()
            } else if (match == 0) {
-               failCount := failCount + 1
-               SendUiMsg("ImageSearch failed to find userDetailFriendNow")
+failCount := failCount + 1
+               SendUiMsg("####ImageSearch failed to find unfriend button from friend detail")
                _clickCloseModalButton()
            }
-                                              } else {
-                                                  SendUiMsg("Skipping deletion, moving to next user")
-                                                      static nextUser := 0
-                                                      nextUser += userIncrement
-                                                      _currentLogic := "D01"
-                                                      failCount := 0
-                                                      _clickCloseModalButton()
-                                                      delayLong()
+nextUser := 0
 
-                                              }
-                                               
-                                              SendUiMsg("Total " userDelIndex " accounts from userdel.txt processed!")
-                                              userDelIndex++
+                                                  } else {
+                                                      SendUiMsg("Current user location: " . (nextUser / userIncrement) + 1 . " Moving to next user")
+                                                          nextUser += userIncrement
+                                                          _currentLogic := "D01"
+                                                          failCount := 0
+                                                          InitLocation("FriendList")
 
-                                              if (failCount >= 5) {
-                                                  SendUiMsg("Fail count reached, during delete") 
-                                                      _currentLogic := "D01"
-                                                      failCount := 0
-                                                      nextUser := 0
-                                                      InitLocation("FriendList")
-                                              }
+                                                  }
+
+                                                  SendUiMsg("Total " userDelIndex " accounts from userdel.txt processed!")
+                                                      userDelIndex++
+
+                                                      if (failCount >= 5) {
+                                                          SendUiMsg("####Fail count reached, during delete") 
+                                                              _currentLogic := "D01"
+                                                              failCount := 0
+                                                              nextUser := 0
+                                                              InitLocation("FriendList")
+                                                      }
 
 
                                   case "D03":
-                                              caseDescription := _currentLocale.DeletingFriendBegin
-                                                  SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
-                                                  if (_thisUserDeleted == FALSE) {
+                                                  caseDescription := _currentLocale.DeletingFriendBegin
+                                                      SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
+                                                      if (_thisUserDeleted == FALSE) {
 match := ImageSearch(
                &matchedX,
                &matchedY,
@@ -1106,11 +1114,11 @@ match := ImageSearch(
                getScreenYbyWindowPercentage('74%'),
                '*50 ' . _imageFile_removeFriendConfirm)
            if (match == 1) {
-                   targetX := matchedX - targetWindowX + 50
-                   targetY := matchedY - targetWindowY + 20
-                   ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
-                   _thisUserDeleted := TRUE
-                   delayLong()
+targetX := matchedX - targetWindowX + 50
+             targetY := matchedY - targetWindowY + 20
+             ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
+             _thisUserDeleted := TRUE
+             delayLong()
            }
            else if (match == 0) {
                SendUiMsg(_currentLocale.FailureDeleteFriendCall)
@@ -1119,18 +1127,18 @@ match := ImageSearch(
                    SendInput "{esc}"
                    InitLocation("FriendList")
            }
-                                                  }
+                                                      }
                                                   if (_thisUserDeleted == TRUE) {
-                                                          _currentLogic := "D01"
-                                                          delayLong()
-                                                          _clickCloseModalButton()
-                                                          if (failCount >= 5) {
-                                                              SendUiMsg(_currentLocale.ScreenTransitionFailure)
-                                                                  _currentLogic := "D01"
-                                                                  failCount := 0
-                                                                  SendInput "{esc}"
-                                                                  InitLocation("FriendList")
-                                                          }
+_currentLogic := "D01"
+                   delayLong()
+                   _clickCloseModalButton()
+                   if (failCount >= 5) {
+                       SendUiMsg(_currentLocale.ScreenTransitionFailure)
+                           _currentLogic := "D01"
+                           failCount := 0
+                           SendInput "{esc}"
+                           InitLocation("FriendList")
+                   }
                                                   }
 
                               }
@@ -1211,7 +1219,7 @@ _clickCloseModalButton() {
     ControlClick(
             'X' . getWindowXbyWindowPercentage('50%') . ' Y' . getWindowYbyWindowPercentage('95%')
             , targetWindowHwnd, , 'Left', 1, 'NA', ,)
-    delayXLong()
+        delayXLong()
 }
 
 _clickSafeArea() {
