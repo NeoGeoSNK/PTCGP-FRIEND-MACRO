@@ -955,7 +955,8 @@ caseDescription := _currentLocale.FriendListVerify
 globalRetryCount := 0
                       targetX := matchedX - targetWindowX
                       targetY := matchedY - targetWindowY
-                      ; Use nextUser to adjust the Y position (default to 0 if not set)
+                      ; Use nextUser to adjust the user position from friend list.
+                      SendUiMsg("Select friend from " . (nextUser / userIncrement) + 1 . " position")
                       ControlClick('X' . targetX . ' Y' . (targetY + 50 + nextUser), targetWindowHwnd, , 'Left', 1, 'NA', ,)
                       delayShort()
                       ControlClick('X' . targetX . ' Y' . (targetY + 50 + nextUser), targetWindowHwnd, , 'Left', 1, 'NA', ,)
@@ -1033,7 +1034,7 @@ canDelete := true
                                                           }
                                                           if (!canDelete) {
                                                               _clickCloseModalButton() 
-                                                                  SendUiMsg("No matching ID found in userdel.txt. User: '" . ocrText . "' was kept")
+                                                                  SendUiMsg("No matching ID found in userdel.txt. Friend: '" . ocrText . "' was kept")
                                                           }
                                                       } else {
                                                           SendUiMsg("OCR returned empty result, not in friend detail page, try to get friend count")
@@ -1081,7 +1082,7 @@ failCount := failCount + 1
 nextUser := 0
 
                                                   } else {
-                                                      SendUiMsg("Current user location: " . (nextUser / userIncrement) + 1 . " Moving to next user")
+                                                      SendUiMsg("Skip delete at position: " . (nextUser / userIncrement) + 1 . " try next friend")
                                                           nextUser += userIncrement
                                                           _currentLogic := "D01"
                                                           failCount := 0
