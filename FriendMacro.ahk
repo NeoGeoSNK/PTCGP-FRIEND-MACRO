@@ -787,7 +787,8 @@ targetWindowHwnd := WinExist(_instanceNameConfig)
                       global targetWindowX, targetWindowY, targetWindowWidth, targetWindowHeight, _thisUserPass, _thisUserFulfilled
                       global _nowAccepting
                       global _recentTick, _currentTick
-                      global failCount
+                      global failCount := 0
+                      global maxFailTry := 8
 
                       _isRunning := TRUE
                       _nowAccepting := TRUE
@@ -799,6 +800,12 @@ targetWindowHwnd := WinExist(_instanceNameConfig)
                       loop {
                           if (!_isRunning) {
                               break
+                          }
+                          
+                          if (failCount > maxFailTry) {
+                              SendUiMsg("Too many error try: " . failCount . ". Exit!")
+                              FinishRun()
+                              return
                           }
 
                           WinGetPos(&targetWindowX, &targetWindowY, &targetWindowWidth, &targetWindowHeight, targetWindowHwnd)
@@ -818,7 +825,6 @@ targetWindowHwnd := WinExist(_instanceNameConfig)
                                           InitLocation("RequestList")
                                           _currentLogic := "000"
                                           static globalRetryCount := 0
-                                          failCount := 0
 
                                   case "000":
 
@@ -883,6 +889,7 @@ A_Clipboard := currentCode ; Set clipboard to the user code
                          targetReqX := sendRequestX - targetWindowX
                          targetReqY := sendRequestY - targetWindowY
                          ControlClick("X" . targetReqX . " Y" . targetReqY, targetWindowHwnd, "", "Left", 1, "NA")
+                         failCount := 0
                  } else {
                      SendUiMsg("####Can't find send request button")
                  }
@@ -928,7 +935,6 @@ A_Clipboard := currentCode ; Set clipboard to the user code
                                                   SendUiMsg("🗑️" . _currentLocale.DeletingFriendBegin)
                                                   caseDescription := _currentLocale.GoToFriendDeleteMenu
                                                   SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
-                                                  failCount := 0
                                                   InitLocation("FriendList")
                                                   delayXLong()
                                                   _currentLogic := "D01"
@@ -987,19 +993,8 @@ globalRetryCount := 0
                              } else if (match == 0) {
 
                                  SendUiMsg("####Can't get friend list, fail try count: " failCount)
-                                     failCount := failCount + 1
+                                 failCount := failCount + 1
                              }
-                         if (failCount >= 5) {
-                         globalRetryCount := globalRetryCount + 1
-                      if (globalRetryCount > 5) {
-                          SendUiMsg(_currentLocale.CriticalFailureExit)
-                              ExitApp
-                      }
-                  SendUiMsg(_currentLocale.RedefiningScreen)
-                      failCount := 0
-                      nextUser := 0  ; Reset nextUser on failure
-                      InitLocation('FriendList')
-                         }
                      }
 
                                                   } else {
@@ -1074,32 +1069,21 @@ targetX := matchedX - targetWindowX + 5
              _currentLogic := "D03"
              delayXLong()
            } else if (match == 0) {
-failCount := failCount + 1
                SendUiMsg("####ImageSearch failed to find unfriend button from friend detail")
                _clickCloseModalButton()
            }
 nextUser := 0
 
                                                   } else {
-                                                      SendUiMsg("Skip delete at position: " . (nextUser / userIncrement) + 1 . " try next friend")
+                                                          failCount := failCount + 1
+                                                          SendUiMsg("Skip delete at position: " . (nextUser / userIncrement) + 1 . " try next friend." . " FailCount: " . failCount)
                                                           nextUser += userIncrement
                                                           _currentLogic := "D01"
-                                                          failCount := 0
                                                           InitLocation("FriendList")
-
                                                   }
 
                                                   SendUiMsg("Total " userDelIndex " accounts from userdel.txt processed!")
                                                       userDelIndex++
-
-                                                      if (failCount >= 5) {
-                                                          SendUiMsg("####Fail count reached, during delete") 
-                                                              _currentLogic := "D01"
-                                                              failCount := 0
-                                                              nextUser := 0
-                                                              InitLocation("FriendList")
-                                                      }
-
 
                                   case "D03":
                                                   caseDescription := _currentLocale.DeletingFriendBegin
@@ -1118,12 +1102,12 @@ targetX := matchedX - targetWindowX + 50
              targetY := matchedY - targetWindowY + 20
              ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
              _thisUserDeleted := TRUE
+             failCount := 0
              delayLong()
            }
            else if (match == 0) {
                SendUiMsg(_currentLocale.FailureDeleteFriendCall)
                    _currentLogic := "D01"
-                   failCount := 0
                    SendInput "{esc}"
                    InitLocation("FriendList")
            }
@@ -1132,15 +1116,7 @@ targetX := matchedX - targetWindowX + 50
 _currentLogic := "D01"
                    delayLong()
                    _clickCloseModalButton()
-                   if (failCount >= 5) {
-                       SendUiMsg(_currentLocale.ScreenTransitionFailure)
-                           _currentLogic := "D01"
-                           failCount := 0
-                           SendInput "{esc}"
-                           InitLocation("FriendList")
-                   }
                                                   }
-
                               }
                       }
 }
@@ -1258,8 +1234,9 @@ _nowAccepting := TRUE
 }
 
 InitLocation(Destination := "RequestList") {
-failCount := 0
-               while failCount < 10 {
+    switchfailCount := 0
+    global maxFailTry
+    while switchfailCount < maxFailTry {
 match := ImageSearch(
                &matchedX
                , &matchedY
@@ -1284,15 +1261,12 @@ targetX := matchedX - targetWindowX + 10
              }
            }
            else if match == 0 {
-failCount := failCount + 1
-               _clickCloseModalButton()
-               delayLong()
+                   switchfailCount := switchfailCount + 1
+                   SendUiMsg(_currentLocale.CantRedefineScreen . ' For ' . switchfailCount . ' times')
+                   _clickCloseModalButton()
+                   delayLong()
            }
-               }
-           if (failCount >= 10) {
-               SendUiMsg(_currentLocale.CantRedefineScreen)
-                   return
-           }
+    }
 }
 
 MillisecToTime(msec) {
