@@ -788,7 +788,10 @@ targetWindowHwnd := WinExist(_instanceNameConfig)
                       global _nowAccepting
                       global _recentTick, _currentTick
                       global failCount := 0
-                      global maxFailTry := 8
+                      global maxFailTry := 9
+                      global userIncrement := 182
+                      global friendsPageSize := 3
+
 
                       _isRunning := TRUE
                       _nowAccepting := TRUE
@@ -924,7 +927,6 @@ A_Clipboard := currentCode ; Set clipboard to the user code
                                               ;; Início da lógica de rejeição
                                   case "D00":
                                               static nextUser := 0
-                                                  global userIncrement := 182
                                                   ;; Redefinir valores de ambiente
                                                   _delayConfig := _userIni.Delay
                                                   _instanceNameConfig := _userIni.InstanceName
@@ -962,8 +964,8 @@ globalRetryCount := 0
                       targetX := matchedX - targetWindowX
                       targetY := matchedY - targetWindowY
                       ; Use nextUser to adjust the user position from friend list.
-                      if (nextUser > userIncrement * 2) {
-                          SendUiMsg("Only 3 friends in a screen, reset position " . (nextUser / userIncrement) + 1 . " to 1")
+                      if (nextUser > userIncrement * friendsPageSize) {
+                          SendUiMsg("Only 4 friends in a screen, reset position " . (nextUser / userIncrement) + 1 . " to 1")
                           nextUser := 0
                       }
                       SendUiMsg("Select friend from " . (nextUser / userIncrement) + 1 . " position")
