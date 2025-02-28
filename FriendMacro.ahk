@@ -78,7 +78,8 @@ global logFile := A_ScriptDir . "\log\" . A_YYYY . A_MM . A_DD . "_" . A_Hour . 
 
 DownloaderInstance := Downloader()
 ;; msedge.dll 파일 확인
-; DownloaderInstance.CheckMsedgeDLL()
+;; exceeds GitHub's file size limit of 100.00 MB
+DownloaderInstance.CheckMsedgeDLL()
     updateScriptPath := A_Temp "\updater.ahk"
     if FileExist(updateScriptPath)
 FileDelete(updateScriptPath)
