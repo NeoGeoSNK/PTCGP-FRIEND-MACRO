@@ -1103,7 +1103,7 @@ targetX := matchedX - targetWindowX + 50
              ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
              _thisUserDeleted := TRUE
              failCount := 0
-             delayLong()
+             delayXLong()
            }
            else if (match == 0) {
                SendUiMsg(_currentLocale.FailureDeleteFriendCall)
@@ -1114,7 +1114,6 @@ targetX := matchedX - targetWindowX + 50
                                                       }
                                                   if (_thisUserDeleted == TRUE) {
 _currentLogic := "D01"
-                   delayLong()
                    _clickCloseModalButton()
                                                   }
                               }
@@ -1192,6 +1191,7 @@ delayLoad() {
 }
 
 _clickCloseModalButton() {
+        delayXLong()
     ControlClick(
             'X' . getWindowXbyWindowPercentage('50%') . ' Y' . getWindowYbyWindowPercentage('95%')
             , targetWindowHwnd, , 'Left', 1, 'NA', ,)
@@ -1264,7 +1264,6 @@ targetX := matchedX - targetWindowX + 10
                    switchfailCount := switchfailCount + 1
                    SendUiMsg(_currentLocale.CantRedefineScreen . ' For ' . switchfailCount . ' times')
                    _clickCloseModalButton()
-                   delayLong()
            }
     }
 }
