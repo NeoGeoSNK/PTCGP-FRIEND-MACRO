@@ -666,7 +666,6 @@ if (_debug == TRUE) {
     statusGUI.Show("")
 }
 
-
 ; Function to read user codes from file
 ReadUserCodesFromFile(fileName) {
     local userCodes := []
@@ -691,11 +690,6 @@ ReadUserCodesFromFile(fileName) {
     return filteredCodes
 }
 
-
-
-
-
-
 ; Define the OCR function
 OCR(area, lang) {
 x := area[1]
@@ -718,6 +712,7 @@ x := area[1]
        return T
 }
 
+global pToken := 0
 
 _main(_currentLogic := "00") {
 
@@ -804,11 +799,11 @@ targetWindowHwnd := WinExist(_instanceNameConfig)
                           if (!_isRunning) {
                               break
                           }
-                          
+
                           if (failCount > maxFailTry) {
                               SendUiMsg("Too many error try: " . failCount . ". Exit!")
-                              FinishRun()
-                              return
+                                  FinishRun()
+                                  return
                           }
 
                           WinGetPos(&targetWindowX, &targetWindowY, &targetWindowWidth, &targetWindowHeight, targetWindowHwnd)
@@ -966,9 +961,9 @@ globalRetryCount := 0
                       ; Use nextUser to adjust the user position from friend list.
                       if (nextUser > userIncrement * friendsPageSize) {
                           SendUiMsg("Only 4 friends in a screen, reset position " . (nextUser / userIncrement) + 1 . " to 1")
-                          nextUser := 0
+                              nextUser := 0
                       }
-                      SendUiMsg("Select friend from " . (nextUser / userIncrement) + 1 . " position")
+                  SendUiMsg("Select friend from " . (nextUser / userIncrement) + 1 . " position")
                       ControlClick('X' . targetX . ' Y' . (targetY + 50 + nextUser), targetWindowHwnd, , 'Left', 1, 'NA', ,)
                       delayShort()
                       ControlClick('X' . targetX . ' Y' . (targetY + 50 + nextUser), targetWindowHwnd, , 'Left', 1, 'NA', ,)
@@ -995,7 +990,7 @@ globalRetryCount := 0
                              } else if (match == 0) {
 
                                  SendUiMsg("####Can't get friend list, fail try count: " failCount)
-                                 failCount := failCount + 1
+                                     failCount := failCount + 1
                              }
                      }
 
@@ -1072,25 +1067,25 @@ targetX := matchedX - targetWindowX + 5
              delayXLong()
            } else if (match == 0) {
                SendUiMsg("####ImageSearch failed to find unfriend button from friend detail")
-               _clickCloseModalButton()
+                   _clickCloseModalButton()
            }
 nextUser := 0
 
                                                   } else {
-                                                          failCount := failCount + 1
-                                                          SendUiMsg("Skip delete at position: " . (nextUser / userIncrement) + 1 . " try next friend." . " FailCount: " . failCount)
-                                                          nextUser += userIncrement
-                                                          _currentLogic := "D01"
-                                                          InitLocation("FriendList")
+failCount := failCount + 1
+               SendUiMsg("Skip delete at position: " . (nextUser / userIncrement) + 1 . " try next friend." . " FailCount: " . failCount)
+               nextUser += userIncrement
+               _currentLogic := "D01"
+               InitLocation("FriendList")
                                                   }
 
                                                   SendUiMsg("Total " userDelIndex " accounts from userdel.txt processed!")
                                                       userDelIndex++
 
                                   case "D03":
-                                                  caseDescription := _currentLocale.DeletingFriendBegin
-                                                      SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
-                                                      if (_thisUserDeleted == FALSE) {
+                                                      caseDescription := _currentLocale.DeletingFriendBegin
+                                                          SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
+                                                          if (_thisUserDeleted == FALSE) {
 match := ImageSearch(
                &matchedX,
                &matchedY,
@@ -1113,11 +1108,11 @@ targetX := matchedX - targetWindowX + 50
                    SendInput "{esc}"
                    InitLocation("FriendList")
            }
-                                                      }
-                                                  if (_thisUserDeleted == TRUE) {
+                                                          }
+                                                      if (_thisUserDeleted == TRUE) {
 _currentLogic := "D01"
                    _clickCloseModalButton()
-                                                  }
+                                                      }
                               }
                       }
 }
@@ -1193,10 +1188,10 @@ delayLoad() {
 }
 
 _clickCloseModalButton() {
-        delayXLong()
-    ControlClick(
-            'X' . getWindowXbyWindowPercentage('50%') . ' Y' . getWindowYbyWindowPercentage('95%')
-            , targetWindowHwnd, , 'Left', 1, 'NA', ,)
+    delayXLong()
+        ControlClick(
+                'X' . getWindowXbyWindowPercentage('50%') . ' Y' . getWindowYbyWindowPercentage('95%')
+                , targetWindowHwnd, , 'Left', 1, 'NA', ,)
         delayXLong()
 }
 
@@ -1236,9 +1231,9 @@ _nowAccepting := TRUE
 }
 
 InitLocation(Destination := "RequestList") {
-    switchfailCount := 0
-    global maxFailTry
-    while switchfailCount < maxFailTry {
+switchfailCount := 0
+                     global maxFailTry
+                     while switchfailCount < maxFailTry {
 match := ImageSearch(
                &matchedX
                , &matchedY
@@ -1263,11 +1258,11 @@ targetX := matchedX - targetWindowX + 10
              }
            }
            else if match == 0 {
-                   switchfailCount := switchfailCount + 1
-                   SendUiMsg(_currentLocale.CantRedefineScreen . ' For ' . switchfailCount . ' times')
-                   _clickCloseModalButton()
+switchfailCount := switchfailCount + 1
+                     SendUiMsg(_currentLocale.CantRedefineScreen . ' For ' . switchfailCount . ' times')
+                     _clickCloseModalButton()
            }
-    }
+                     }
 }
 
 MillisecToTime(msec) {
@@ -1353,10 +1348,18 @@ StartRun(startLogic) {
 }
 
 FinishRun() {
-    global _isRunning
+    global _isRunning, pToken
         _isRunning := FALSE
         wv.ExecuteScriptAsync("SwitchUIMode('" FALSE "')")
-        Gdip_Shutdown(pToken)  ; Shut down Gdip with the token
+
+        ; Only call Gdip_Shutdown if pToken is valid (non-zero)
+        if (pToken) {
+            Gdip_Shutdown(pToken)
+                SendUiMsg("Gdip_Shutdown called successfully")
+                pToken := 0  ; Reset pToken after shutdown
+        } else {
+            SendUiMsg("Gdip_Shutdown skipped - GDI+ was not initialized")
+        }
 }
 
 TogglePauseMode() {
