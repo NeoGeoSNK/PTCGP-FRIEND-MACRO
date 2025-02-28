@@ -56,8 +56,20 @@ hr {
 .appLogo {
     width: 40px;
     height: 40px;
-    background: url(../image/_app_Icon.png);
-    background-size: cover;
+    position: relative; /* For positioning the pseudo-element */
+}
+
+.appLogo::before {
+    content: "\1F30F"; /* Unicode escape for globe asia 🌏 */
+    font-size: 30px;
+    line-height: 40px;
+    text-align: center;
+    display: block; /* Ensures it fills the container */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }
 
 .appBanana {
@@ -259,13 +271,6 @@ textarea::-webkit-scrollbar {
     gap: 2px;
 }
 
-#gitHubLinkBR {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 2px;
-}
-
 .banana {
     width: 18px;
     height: 18px;
@@ -284,6 +289,25 @@ textarea::-webkit-scrollbar {
     background-position: center;
 }
 
+.globeIcon {
+    width: 16px;
+    height: 16px;
+    position: relative; /* For positioning the pseudo-element */
+    margin-right: 4px; /* Adds space after the icon */
+}
+
+.globeIcon::before {
+    content: "\1F30F"; /* Unicode escape for globe asia 🌏 */
+    font-size: 16px;
+    line-height: 16px;
+    text-align: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
 #gitHubLink > span {
     color: #1C81E6;
     font-family: Pretendard;
@@ -295,16 +319,6 @@ textarea::-webkit-scrollbar {
     cursor: pointer;
 }
 
-#gitHubLinkBR > span {
-    color: #1C81E6;
-    font-family: Pretendard;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 130%;
-    text-decoration: underline;
-    cursor: pointer;
-}
 
 #logHistoryTextArea:focus {
     border: none;

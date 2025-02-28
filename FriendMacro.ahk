@@ -1,8 +1,8 @@
 /************************************************************************
- * @description PtcgP FriendMacro by GaloXDoido
- * @author GaloXDoido (Original Code by Banana-juseyo)
- * @date 2025/02/04
- * @version 1.10
+ * @description PTCGP friend macro
+ * @author nyu (Original Code by GaloXDoido Banana-juseyo)
+ * @date 2025/02/28
+ * @version 0.90
  * @see {@link https://github.com/GaloXDoido/PtcgP-FriendMacro-GaloXDoido Github Repository of this version}
  * @see {@link https://github.com/banana-juseyo/Banana-Macro-PtcgP Github Repository of Original Code}
  ***********************************************************************/
@@ -13,9 +13,10 @@
 ; Recommended emulator: mumuplayer
 ; Recommended instance resolution: 540 * 960 (220 dpi)
 
-global _appTitle := "PtcgP FriendMacro"
-global _author := "GaloXDoido (Original Code by Banana-juseyo)"
-global _currentVersion := "v1.10"
+global _appTitle := "PTCGP friend macro"
+global _author := "nyu (Original Code by GaloXDoido Banana-juseyo)"
+global _currentVersion := "v0.90"
+global _websiteNY := "https:www.baidu.com"
 global _website := "https://github.com/banana-juseyo/Banana-Macro-PtcgP"
 global _websiteBR := "https://github.com/GaloXDoido/PtcgP-FriendMacro-GaloXDoido"
 global _repoName := "Banana-Macro-PtcgP"
@@ -47,10 +48,6 @@ global _imageFile_friendListEmpty := A_ScriptDir . "\asset\match\friendListEmpty
 global _imageFile_friendCountEmpty := A_ScriptDir . "\asset\match\friendCountEmpty.png"
 global _imageFile_friendCount1 := A_ScriptDir . "\asset\match\friendCount1.png"
 global _imageFile_removeFriendConfirm := A_ScriptDir . "\asset\match\removeFriendConfirm.png"
-global _imageFile_removeFriendConfirmSpanish := A_ScriptDir . "\asset\match\removeFriendConfirmSpanish.png"
-global _imageFile_appIcon := A_ScriptDir . "\asset\image\_app_Icon.png"
-global _imageFile_close := A_ScriptDir . "\asset\image\_app_Close.png"
-global _imageFile_restart := A_ScriptDir . "\asset\image\_app_Restart.png"
 global _localeFolderPath := A_ScriptDir . "\asset\locales\"
 
 ; Variáveis Globais
@@ -362,7 +359,7 @@ radius := Round(8 * d)
 ui := Gui("-SysMenu -Caption +LastFound")
 ui.OnEvent('Close', (*) => ExitApp())
 
-    hIcon := LoadPicture(".\asset\image\app.ico", "Icon1 w" 32 " h" 32, &imgtype)
+    hIcon := LoadPicture(".\asset\image\_gb_Icon.png", "Icon1 w" 32 " h" 32, &imgtype)
 SendMessage(0x0080, 1, hIcon, ui)
     ui.Show("w560 h432")
     _instanceWindow := WinGetID(A_ScriptName, , "Code",)
@@ -392,6 +389,9 @@ UpdateHtmlVersion(_currentVersion)
 
             message := args.TryGetWebMessageAsString()
             switch message {
+                case "_button_click_header_ny":
+                    Run _websiteNY
+                        return
                 case "_button_click_header_home":
                     Run _website
                         return

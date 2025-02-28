@@ -13,7 +13,7 @@
                 <div class="appLogo"></div>
             </div>
             <div class="headerBarContainer">
-                <div class="versionText" id="versionText">v1.00</div>
+                <div class="versionText" id="versionText">v0.90</div>
                 <div class="updateButton">Update Version</div>
                 <div class="homeButton headerButton" id="headerHomeButton">
                     <div class="homeIcon headerButtonIcon"></div>
@@ -36,16 +36,20 @@
                     <div class="descriptionContainer">
                         <span class="descriptionCss" id="descriptionEn">Github Repository:</span>
                     </div>
-                    <div class="gitHubLinkBR" id="gitHubLinkBR">
-                        <div class="brazilFlag"></div> <span
-                            onClick="githubLinkBR()">https://github.com/GaloXDoido/PtcgP-FriendMacro-GaloXDoido</span>
+                    <div class="gitHubLink" id="gitHubLink">
+                        <div class="globeIcon"></div> <span
+                            onClick="githubLink('_button_click_header_ny')">https://www.baidu.com</span>
                     </div>
                     <div class="descriptionContainerOriginalCode">
-                        <span class="descriptionCss" id="descriptionEn">This macro was based on this code:</span>
+                        <span class="descriptionCss" id="descriptionEn">This macro was based on following projects:</span>
+                    </div>
+                    <div class="gitHubLink" id="gitHubLink">
+                        <div class="brazilFlag"></div> <span
+                            onClick="githubLink('_button_click_header_traducao')">https://github.com/GaloXDoido/PtcgP-FriendMacro-GaloXDoido</span>
                     </div>
                     <div class="gitHubLink" id="gitHubLink">
                         <div class="banana"></div> <span
-                            onClick="githubLink()">https://github.com/banana-juseyo/Banana-Macro-PtcgP</span>
+                            onClick="githubLink('_button_click_header_home')">https://github.com/banana-juseyo/Banana-Macro-PtcgP</span>
                     </div>
                 </div>
             </div>
@@ -53,19 +57,13 @@
         <div class="footerContainer footerStopped" id="footerStopped">
             <div class="startButton footerButton cta" id="footerStartButton">
                 <div class="labelContainer">
-                    <span class="footerButtonLabel" id="footerStartButtonLabel">▶️</span>
+                    <span class="footerButtonLabel" id="footerStartButtonLabel">💕</span>
                     <span class="footerButtonHint">F5</span>
-                </div>
-            </div>
-            <div class="startButton footerButton cta" id="footerStartWoDeletingButton">
-                <div class="labelContainer">
-                    <span class="footerButtonLabel" id="footerStartButtonLabel">▶️🗑️🚫</span>
-                    <span class="footerButtonHint"></span>
                 </div>
             </div>
             <div class="clearFriendsButton footerButton" id="footerClearFriendsButton">
                 <div class="labelContainer">
-                    <span class="footerButtonLabel" id="clearFriendsButtonLabel">👥🗑️</span>
+                    <span class="footerButtonLabel" id="clearFriendsButtonLabel">🗑️</span>
                     <span class="footerButtonHint">F6</span>
                 </div>
             </div>
@@ -99,7 +97,7 @@
 </body>
 <script>
     document.getElementById("headerHomeButton").onclick = function () {
-        chrome.webview.postMessage("_button_click_header_traducao");
+        chrome.webview.postMessage("_button_click_header_ny");
     }
     document.getElementById("headerRestartButton").onclick = function () {
         chrome.webview.postMessage("_button_click_header_restart");
@@ -109,9 +107,6 @@
     }
     document.getElementById("footerStartButton").onclick = function () {
         chrome.webview.postMessage("_button_click_footer_start");
-    }
-    document.getElementById("footerStartWoDeletingButton").onclick = function () {
-        chrome.webview.postMessage("_button_click_footer_start_wo_deleting");
     }
     document.getElementById("footerClearFriendsButton").onclick = function () {
         chrome.webview.postMessage("_button_click_footer_clear_friends");
@@ -129,12 +124,8 @@
         chrome.webview.postMessage("_button_click_footer_settings");
     }
 
-    function githubLink() {
-        chrome.webview.postMessage("_button_click_header_home");
-    }
-
-    function githubLinkBR() {
-        chrome.webview.postMessage("_button_click_header_traducao");
+    function githubLink(id) {
+        chrome.webview.postMessage(id);
     }
 
     function updateVersionText(version) {
@@ -184,16 +175,8 @@
             pauseButton.style.backgroundColor = "#FAFAFA"
         }
     }
-
     document.getElementById("gitHubLink").addEventListener("click", e => {
-        e.preventDefault()
-
-    })
-
-    document.getElementById("gitHubLinkBR").addEventListener("click", e => {
-        e.preventDefault()
-    })
-
+        e.preventDefault();
+    });
 </script>
-
 </html>
