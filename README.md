@@ -11,7 +11,7 @@ Video of usage
 
 # A friend macro for Pokémon TCG Pocket game by nyu
 
-The code was heavily based on the open-source macro "PtcgP-FriendMacro-GaloXDoido" created by [GaloXDoido] (https://github.com/GaloXDoido/PtcgP-FriendMacro-GaloXDoido) & "Banana Macro PtcgP," created by [banana-juseyo](https://github.com/banana-juseyo/Banana-Macro-PtcgP).
+The code was heavily based on the open-source macro "PtcgP-FriendMacro-GaloXDoido" created by [GaloXDoido](https://github.com/GaloXDoido/PtcgP-FriendMacro-GaloXDoido). & "Banana Macro PtcgP," created by [banana-juseyo](https://github.com/banana-juseyo/Banana-Macro-PtcgP).
 
 
 #
@@ -51,12 +51,8 @@ Step 2: Set-Up MuMu Player
   - Exit directly
 
 Step 3: Install PTCGP
- - PTCGP Speed Mod [[Here]](https://modsfire.com/y6p37S9f7n2fD38) ** - *Thanks to nowhere_222 from the platinmods forum.*
-- Drag and drop into your MuMu instance
-  -# **If you are using the version of this mod with 3x speed, please use 2x speed with this bot as a precaution, since 3x has not been tested.
 - Do not move the app from where it is placed on the home screen.
 - Manually open the game.
-- If you're using the new speed mod linked above then make sure to click the "PM" logo > cog wheel > save preferences > cog wheel > set speed to the one you will be running at > click minimize
 
 Step 4: Windows settings
 - **This macro was made to run with windows on 100% scale.** > Press windows key > Type "display settings" > Look for the scale setting and change it to 100% for all your monitors.
@@ -72,27 +68,20 @@ Step 6:
 - **On first run after pressing start, if prompted for super user access in each instance, select to allow forever.**
 
 
-![FriendMacro Interface](https://github.com/user-attachments/assets/9e0d72a9-1296-4b46-b6e4-ac4077c17891)
-
-
-FriendMacro's Interface
-
 Step 7: Click on the Cogwheel button (⚙) and input your script settings
 - Name of Mumu instance
 - Delay in between actions
 - Acceptance time in minutes
 - Wait time between the end of acceptance phase and the beginning of deletion phase in minutes
-- Language: The program's execution language.
+- Language: Only English supported
   
 - Click Save button to reload app
 
 Step 8: Choose a button to start the macro:
 
-- "Start" Button (▶️): Begins by accepting friend requests.
+- Button (💕): Begins by adding friends
 
-- "Start Without Friend Deletion Phase" Button (The ▶️🗑️🚫 button): Forever accepting requests, never entering the deletion phase.
-
-- "Start from Friend Deletion" Button (The 👥🗑️ button): First clears the friend list, then automatically starts accepting requests.
+- Button (🗑️): Start deleting friends
   
  **Allow adb to run and through the firewall if it asks you**
 
@@ -114,12 +103,13 @@ A: This can happen due to issues during the automatic update process. Re-downloa
 
 # Modification and Redistribution
 
-This project, as well as the original project it is based on, is licensed under GPL-3.0, allowing modifications and redistribution, provided that proper credit is given to both the original author, __banana-juseyo__, and __myself__.
+This project, as well as the original project it is based on, is licensed under GPL-3.0, allowing modifications and redistribution, provided that proper credit is given to both the original author, __banana-juseyo__, and __GaloXDoido__.
 
 # Credits
 
 Technical Contributions:
-
+ - __"GaloXDoido"__ for the original code on which this macro is based
+    [Repository](https://github.com/GaloXDoido/PtcgP-FriendMacro-GaloXDoido)
  - __"banana-juseyo"__ for the original code on which this macro is based
     [Repository](https://github.com/banana-juseyo/Banana-Macro-PtcgP)
  - __"thqby"__ for WebView2 control in AutoHotkey
