@@ -65,8 +65,8 @@ Step 5:
 
 Step 6: 
 - Run __FriendMacro.ahk__
+- **On first run, the script need download msedge.dll from (https://github.com/banana-juseyo/Banana-Macro-PtcgP). It's too large to include in project itself.**
 - **On first run after pressing start, if prompted for super user access in each instance, select to allow forever.**
-
 
 Step 7: Click on the Cogwheel button (⚙) and input your script settings
 - Name of Mumu instance
