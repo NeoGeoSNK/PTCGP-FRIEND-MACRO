@@ -2,7 +2,7 @@
  * @description PTCGP friend macro
  * @author nyu (Original Code by GaloXDoido Banana-juseyo)
  * @date 2025/02/28
- * @version 0.90
+ * @version 1.02
  * @see {@link https://github.com/GaloXDoido/PtcgP-FriendMacro-GaloXDoido Github Repository of this version}
  * @see {@link https://github.com/banana-juseyo/Banana-Macro-PtcgP Github Repository of Original Code}
  ***********************************************************************/
@@ -15,7 +15,7 @@
 
 global _appTitle := "PTCGP friend macro"
 global _author := "nyu (Original Code by GaloXDoido Banana-juseyo)"
-global _currentVersion := "v0.90"
+global _currentVersion := "v1.0.2"
 global _websiteNY := "https://github.com/NeoGeoSNK/PTCGP-FRIEND-MACRO"
 global _website := "https://github.com/banana-juseyo/Banana-Macro-PtcgP"
 global _websiteBR := "https://github.com/GaloXDoido/PtcgP-FriendMacro-GaloXDoido"
