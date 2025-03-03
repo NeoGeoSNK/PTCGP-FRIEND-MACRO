@@ -4,21 +4,13 @@ Updated to support add/delete friend from given text file (English version only)
 
 #
 
-
-<img align="center"></img>
-
 ![Interface](https://github.com/NeoGeoSNK/PTCGP-FRIEND-MACRO/blob/2bbd98f6692760766989a91ade69c3c7795cd55c/Capture.PNG)
 
 # A friend macro for Pokémon TCG Pocket game by nyu
 
 The code was heavily based on the open-source macro "PtcgP-FriendMacro-GaloXDoido" created by [GaloXDoido](https://github.com/GaloXDoido/PtcgP-FriendMacro-GaloXDoido). & "Banana Macro PtcgP," created by [banana-juseyo](https://github.com/banana-juseyo/Banana-Macro-PtcgP).
 
-
 #
-**__How can I get it working?__**
-
-The steps to use this macro are basically the same as [Arturo's Pokémon Trading Card Game Pocket Bot](https://github.com/Arturo-1212/PTCGPB), so I will take the liberty of reproducing the same steps here, with some relevant modifications.
-
 __ATTENTION!!__
 
 This script __REQUIRES AutoHotKey v2.0__. If you're using Arthuro's bot, you MUST install the updated AutoHotKey 2.0 version to use this script.
@@ -28,6 +20,7 @@ Don't worry — Arthuro's bot will continue to work, as AutoHotKey supports havi
 If you try to run this script with an older AHK version, __it won't open at all__.
 
 #
+**__How can I get it working?__**
 
 Step 1: Install the necessary programs
 - [AutoHotKey v2.0](https://www.autohotkey.com/download/ahk-v2.exe) (It needs to be version 2.0. The macro will not run if you are using earlier versions of AHK.)
