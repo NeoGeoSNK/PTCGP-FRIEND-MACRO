@@ -13,11 +13,8 @@ The code was heavily based on the open-source macro "PtcgP-FriendMacro-GaloXDoid
 #
 __ATTENTION!!__
 
-This script __REQUIRES AutoHotKey v2.0__. If you're using Arthuro's bot, you MUST install the updated AutoHotKey 2.0 version to use this script.
-
-Don't worry — Arthuro's bot will continue to work, as AutoHotKey supports having multiple versions installed simultaneously on Windows.
-
-If you try to run this script with an older AHK version, __it won't open at all__.
+- This script __REQUIRES AutoHotKey v2.0__. If you're using Arthuro's bot, you MUST install the updated AutoHotKey 2.0 version to use this script.
+- The maximum pending friend request is 30, limited by the game itself.
 
 #
 **__How can I get it working?__**
@@ -25,6 +22,8 @@ If you try to run this script with an older AHK version, __it won't open at all_
 Step 1: Install the necessary programs
 - [AutoHotKey v2.0](https://www.autohotkey.com/download/ahk-v2.exe) (It needs to be version 2.0. The macro will not run if you are using earlier versions of AHK.)
 - [Global MuMu Player](https://adl.easebar.com/d/g/mumu/c/mumuglobal?type=pc&direct=1)
+- [tesseract-ocr](https://github.com/tesseract-ocr/tesseract/releases/download/5.5.0/tesseract-ocr-w64-setup-5.5.0.20241111.exe) (Depended by delete friend feature)
+  You need add the tesseract-ocr install location to the **Path** Environment Variables of your system (e.g. C:\Program Files\Tesseract-OCR).
 
 Step 2: Set-Up MuMu Player
 - Install
@@ -43,7 +42,7 @@ Step 2: Set-Up MuMu Player
   - **Check: Enable Root Permissions**
   - Exit directly
 
-Step 3: Install PTCGP
+Step 3: Install the PTCGP game
 - Do not move the app from where it is placed on the home screen.
 - Manually open the game.
 
@@ -53,15 +52,20 @@ Step 4: Windows settings
 - HDR off
 
 Step 5: 
-- Download this Bot zip on the releases tab
+- Download this Bot zip on the releases tab. [PTCGP-FRIEND-MACRO
+](https://github.com/NeoGeoSNK/PTCGP-FRIEND-MACRO/releases)
 - Extract it by Right clicking the zip > extract
 
 Step 6: 
+- Open useradd.txt, input the friend codes you want to add.
+- Open userdel.txt, input the friend codes you want to delete.
+
+Step 7: 
 - Run __FriendMacro.ahk__
 - **On first run, the script need download msedge.dll from (https://github.com/banana-juseyo/Banana-Macro-PtcgP). It's too large to include in project itself.**
 - **On first run after pressing start, if prompted for super user access in each instance, select to allow forever.**
 
-Step 7: Click on the Cogwheel button (⚙) and input your script settings
+Step 8: Click on the Cogwheel button (⚙) and input your script settings
 - Name of Mumu instance
 ![Name of Mumu instance](https://github.com/NeoGeoSNK/PTCGP-FRIEND-MACRO/blob/48eb4d57166c75853268699c957507a1e0c49e34/asset/image/instance.PNG)
   Input your instance name
@@ -72,7 +76,7 @@ Step 7: Click on the Cogwheel button (⚙) and input your script settings
   
 - Click Save button to reload app
 
-Step 8: Choose a button to start the macro:
+Step 9: Choose a button to start the macro:
 
 - Button (💕): Begins by adding friends
 
@@ -111,3 +115,5 @@ Technical Contributions:
     [Repository](https://github.com/thqby/ahk2_lib)
  - __"TheArkive"__ for JXON_ahk2
     [Repository](https://github.com/TheArkive/JXON_ahk2)
+ - __"Tesseract"__ for OCR Engine
+    [Repository](https://github.com/tesseract-ocr/tesseract)
