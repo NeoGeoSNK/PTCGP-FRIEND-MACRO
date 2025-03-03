@@ -1,6 +1,6 @@
 # Important
 
-Updated to support add/delete friend from given text file (English version only).
+Updated to support add/delete friends from given text file (English version only).
 
 #
 
@@ -13,7 +13,7 @@ The code was heavily based on the open-source macro "PtcgP-FriendMacro-GaloXDoid
 #
 __ATTENTION!!__
 
-- This script __REQUIRES AutoHotKey v2.0__. If you're using Arthuro's bot, you MUST install the updated AutoHotKey 2.0 version to use this script.
+- This script __REQUIRES AutoHotKey v2.0__. You MUST install the updated AutoHotKey 2.0 version to use this script.
 - The maximum pending friend request is 30, limited by the game itself.
 
 #
