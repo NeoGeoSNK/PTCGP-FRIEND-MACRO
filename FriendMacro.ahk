@@ -16,7 +16,7 @@
 global _appTitle := "PTCGP friend macro"
 global _author := "nyu (Original Code by GaloXDoido Banana-juseyo)"
 global _currentVersion := "v0.90"
-global _websiteNY := "https:www.baidu.com"
+global _websiteNY := "https://github.com/NeoGeoSNK/PTCGP-FRIEND-MACRO"
 global _website := "https://github.com/banana-juseyo/Banana-Macro-PtcgP"
 global _websiteBR := "https://github.com/GaloXDoido/PtcgP-FriendMacro-GaloXDoido"
 global _repoName := "Banana-Macro-PtcgP"
