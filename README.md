@@ -57,8 +57,8 @@ Step 5:
 - Extract it by Right clicking the zip > extract
 
 Step 6: 
-- Open useradd.txt, input the friend codes you want to add.
-- Open userdel.txt, input the friend codes you want to delete.
+- Open **useradd.txt**, input the friend codes you want to add.
+- Open **userdel.txt**, input the friend codes you want to delete.
 
 Step 7: 
 - Run __FriendMacro.ahk__
@@ -68,12 +68,11 @@ Step 7:
 Step 8: Click on the Cogwheel button (⚙) and input your script settings
 - Name of Mumu instance
 ![Name of Mumu instance](https://github.com/NeoGeoSNK/PTCGP-FRIEND-MACRO/blob/48eb4d57166c75853268699c957507a1e0c49e34/asset/image/instance.PNG)
-  Input your instance name
+  **Choose and input your instance name**
 - Delay in between actions
 - Acceptance time in minutes
 - Wait time between the end of acceptance phase and the beginning of deletion phase in minutes
-- Language: Only English supported
-  
+- Language: Only English supported  
 - Click Save button to reload app
 
 Step 9: Choose a button to start the macro:
