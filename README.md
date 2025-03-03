@@ -1,13 +1,13 @@
 # Important
 
-Updated to support add/delete friend from given text file.
+Updated to support add/delete friend from given text file (English version only).
 
 #
 
 
 <img align="center"></img>
 
-Video of usage
+![Interface](https://github.com/NeoGeoSNK/PTCGP-FRIEND-MACRO/blob/2bbd98f6692760766989a91ade69c3c7795cd55c/Capture.PNG)
 
 # A friend macro for Pokémon TCG Pocket game by nyu
 
