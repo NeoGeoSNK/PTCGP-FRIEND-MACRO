@@ -63,6 +63,8 @@ Step 6:
 
 Step 7: Click on the Cogwheel button (⚙) and input your script settings
 - Name of Mumu instance
+![Name of Mumu instance](https://github.com/NeoGeoSNK/PTCGP-FRIEND-MACRO/blob/48eb4d57166c75853268699c957507a1e0c49e34/asset/image/instance.PNG)
+  Input your instance name
 - Delay in between actions
 - Acceptance time in minutes
 - Wait time between the end of acceptance phase and the beginning of deletion phase in minutes
