@@ -677,16 +677,13 @@ ReadUserCodesFromFile(fileName) {
         }
     local fileContent := FileRead(filePath)
         userCodes := StrSplit(fileContent, "`n", "`r")
-        ; Remove empty lines and trim whitespace
-        Loop userCodes.Length {
-            userCodes[A_Index] := Trim(userCodes[A_Index])
-        }
-    ; Filter out empty entries
         filteredCodes := []
         for code in userCodes {
-            if (code != "") {
-                filteredCodes.Push(code)
-            }
+code := Trim(code)
+          code := RegExReplace(code, "[^0-9]", "")
+          if (code != "") {
+              filteredCodes.Push(code)
+          }
         }
     return filteredCodes
 }
@@ -731,7 +728,7 @@ _main(_currentLogic := "00") {
 
         global pToken := Gdip_Startup()  ; Initialize Gdip for OCR useage and store the token
 
-        userCodesArray := ReadUserCodesFromFile("usercodes.txt")  ; For adding friends
+        userCodesArray := ReadUserCodesFromFile("useradd.txt")  ; For adding friends
         userCodeIndex := 1
         userCodesCount := userCodesArray.Length
 
@@ -740,9 +737,9 @@ _main(_currentLogic := "00") {
         userDelCount := userDelArray.Length
 
         if (userCodesCount = 0) {
-            SendUiMsg("No user codes found in usercodes.txt. Please add user codes to the file.")
+            SendUiMsg("No user codes found in useradd.txt. Please add user codes to the file.")
         } else {
-            SendUiMsg("Found " . userCodesCount . " user codes in usercodes.txt.")
+            SendUiMsg("Found " . userCodesCount . " user codes in useradd.txt.")
         }
     if (userDelArray.Length = 0) {
         SendUiMsg("No user IDs found in userdel.txt. Deletion will be skipped unless IDs are added.")
@@ -896,7 +893,7 @@ A_Clipboard := currentCode ; Set clipboard to the user code
              delayXLong()
 
                      } else {
-                         SendUiMsg("####Warning: Empty user code in usercodes.txt at line " . userCodeIndex . ". Skipping.")
+                         SendUiMsg("####Warning: Empty user code in useradd.txt at line " . userCodeIndex . ". Skipping.")
                      }
 
              } else {
