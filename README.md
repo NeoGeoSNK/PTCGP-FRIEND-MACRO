@@ -10,15 +10,8 @@ Updated to support add/delete friend from given text file.
 Video of usage
 
 # A friend macro for Pokémon TCG Pocket game by nyu
-A open source Macro WITH GUI to automatically add and remove friends in the Pokémon TCG Pocket game, made with AutoHotKey.
 
-The code was heavily based on the open-source macro "Banana Macro PtcgP," created by [banana-juseyo](https://github.com/banana-juseyo/Banana-Macro-PtcgP).
-
-I completely adapted the logic of the original Korean code to remove certain restrictions related to exclusive use by specific users and added localization for English, Spanish, and Brazilian Portuguese, along with a few other modifications.
-
-If you liked it and want to support me in any way, please leave a like on my showcase on PtcgP, here's my friend code:  __5170263375029596__
-
-이 코드는 banana-juseyo가 작성한 원본 코드를 기반으로 했습니다. 감사합니다!
+The code was heavily based on the open-source macro "PtcgP-FriendMacro-GaloXDoido" created by [GaloXDoido] (https://github.com/GaloXDoido/PtcgP-FriendMacro-GaloXDoido) & "Banana Macro PtcgP," created by [banana-juseyo](https://github.com/banana-juseyo/Banana-Macro-PtcgP).
 
 
 #
