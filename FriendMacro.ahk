@@ -1,21 +1,18 @@
 /************************************************************************
  * @description PTCGP friend macro
- * @author nyu (Original Code by GaloXDoido Banana-juseyo)
- * @date 2025/02/28
- * @version 1.02
- * @see {@link https://github.com/GaloXDoido/PtcgP-FriendMacro-GaloXDoido Github Repository of this version}
- * @see {@link https://github.com/banana-juseyo/Banana-Macro-PtcgP Github Repository of Original Code}
+ * @author nyu
+ *
+ * @see {@link https://github.com/NeoGeoSNK/PTCGP-FRIEND-MACRO}
  ***********************************************************************/
 
-; Original code by Banana-juseyo
-; Translated and adapted by GaloXDoido
+; Original code by Banana-juseyo, GaloXDoido
 ; Recommended screen resolution: 1920 * 1080
 ; Recommended emulator: mumuplayer
 ; Recommended instance resolution: 540 * 960 (220 dpi)
 
 global _appTitle := "PTCGP friend macro"
 global _author := "nyu (Original Code by GaloXDoido Banana-juseyo)"
-global _currentVersion := "v1.0.2"
+global _currentVersion := "v1.0.3"
 global _websiteNY := "https://github.com/NeoGeoSNK/PTCGP-FRIEND-MACRO"
 global _website := "https://github.com/banana-juseyo/Banana-Macro-PtcgP"
 global _websiteBR := "https://github.com/GaloXDoido/PtcgP-FriendMacro-GaloXDoido"
@@ -78,7 +75,7 @@ global logFile := A_ScriptDir . "\log\" . A_YYYY . A_MM . A_DD . "_" . A_Hour . 
 
 DownloaderInstance := Downloader()
 ;; msedge.dll 파일 확인
-;; exceeds GitHub's file size limit of 100.00 MB
+    ;; exceeds GitHub's file size limit of 100.00 MB
 DownloaderInstance.CheckMsedgeDLL()
     updateScriptPath := A_Temp "\updater.ahk"
     if FileExist(updateScriptPath)
@@ -394,51 +391,51 @@ UpdateHtmlVersion(_currentVersion)
                     Run _websiteNY
                         return
                 case "_button_click_header_home":
-                    Run _website
-                        return
-                case "_button_click_header_traducao":
-                        Run _websiteBR
+                        Run _website
                             return
-                case "_button_click_header_restart":
-                            FinishRun()
-                                Reload
+                case "_button_click_header_traducao":
+                            Run _websiteBR
                                 return
-                case "_button_click_header_quit":
-                                ExitApp
+                case "_button_click_header_restart":
+                                FinishRun()
+                                    Reload
                                     return
-                case "_button_click_footer_start":
-                                    SetTimer(() => StartRun("00"), -1)
+                case "_button_click_header_quit":
+                                    ExitApp
                                         return
-                case "_button_click_footer_start_wo_deleting":
-                                        _acceptingTermConfig := 90000000000000
-                                            IniWrite 90000000000000, "Settings.ini", "UserSettings", "AcceptingTerm"
-                                            SetTimer(() => StartRun("00"), -1)
+                case "_button_click_footer_start":
+                                        SetTimer(() => StartRun("00"), -1)
                                             return
+                case "_button_click_footer_start_wo_deleting":
+                                            _acceptingTermConfig := 90000000000000
+                                                IniWrite 90000000000000, "Settings.ini", "UserSettings", "AcceptingTerm"
+                                                SetTimer(() => StartRun("00"), -1)
+                                                return
                 case "_button_click_footer_clear_friends":
-                                            SetTimer(() => StartRun("D00"), -1)
-                                                return
+                                                SetTimer(() => StartRun("D00"), -1)
+                                                    return
                 case "_button_click_footer_pause":
-                                                TogglePauseMode()
-                                                    Pause -1
-                                                    if (_isPausing) {
-                                                        SendUiMsg("⏸️" . _currentLocale.PauseButton)
-                                                    }
-                                                    else if ( NOT _isPausing) {
-                                                        SendUiMsg("▶️" . _currentLocale.ContinueButton)
-                                                    }
-                                                return
+                                                    TogglePauseMode()
+                                                        Pause -1
+                                                        if (_isPausing) {
+                                                            SendUiMsg("⏸️" . _currentLocale.PauseButton)
+                                                        }
+                                                        else if ( NOT _isPausing) {
+                                                            SendUiMsg("▶️" . _currentLocale.ContinueButton)
+                                                        }
+                                                    return
                 case "_button_click_footer_stop":
-                                                    FinishRun()
-                                                        return
-                case "_button_click_footer_settings":
-                                                        GuiInstance := ConfigGUI()
+                                                        FinishRun()
                                                             return
-                case "_click_github_link":
-                                                            Run _website
+                case "_button_click_footer_settings":
+                                                            GuiInstance := ConfigGUI()
                                                                 return
-                case "_click_github_link_traducao":
-                                                                Run _websiteBR
+                case "_click_github_link":
+                                                                Run _website
                                                                     return
+                case "_click_github_link_traducao":
+                                                                    Run _websiteBR
+                                                                        return
             }
     }
 
@@ -839,7 +836,6 @@ targetWindowHwnd := WinExist(_instanceNameConfig)
                                                   if (match == 1) {
 targetX := matchedX - targetWindowX
              targetY := matchedY - targetWindowY
-             delayLong()
              ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
              delayXLong()
 
@@ -890,8 +886,6 @@ A_Clipboard := currentCode ; Set clipboard to the user code
                      SendUiMsg("####Can't find send request button")
                  }
 
-             delayXLong()
-
                      } else {
                          SendUiMsg("####Warning: Empty user code in useradd.txt at line " . userCodeIndex . ". Skipping.")
                      }
@@ -931,7 +925,6 @@ A_Clipboard := currentCode ; Set clipboard to the user code
                                                   caseDescription := _currentLocale.GoToFriendDeleteMenu
                                                   SendUiMsg("[Current] " . _currentLogic . " : " . caseDescription)
                                                   InitLocation("FriendList")
-                                                  delayXLong()
                                                   _currentLogic := "D01"
 
                                   case "D01":
@@ -970,7 +963,6 @@ globalRetryCount := 0
                       delayLong()
                      } else if (match == 0) {
                          SendUiMsg("Checking friend count.")
-                             delayXLong()
                              match := ImageSearch(
                                      &matchedX,
                                      &matchedY,
@@ -1062,7 +1054,6 @@ targetX := matchedX - targetWindowX + 5
              ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
              SendUiMsg("Click unfriend from friend detail")
              _currentLogic := "D03"
-             delayXLong()
            } else if (match == 0) {
                SendUiMsg("####ImageSearch failed to find unfriend button from friend detail")
                    _clickCloseModalButton()
@@ -1190,7 +1181,6 @@ _clickCloseModalButton() {
         ControlClick(
                 'X' . getWindowXbyWindowPercentage('50%') . ' Y' . getWindowYbyWindowPercentage('95%')
                 , targetWindowHwnd, , 'Left', 1, 'NA', ,)
-        delayXLong()
 }
 
 _clickSafeArea() {
@@ -1229,9 +1219,10 @@ _nowAccepting := TRUE
 }
 
 InitLocation(Destination := "RequestList") {
-switchfailCount := 0
-                     global maxFailTry
-                     while switchfailCount < maxFailTry {
+    global maxFailTry
+        global failCount
+        while failCount <= maxFailTry {
+               delayXLong()
 match := ImageSearch(
                &matchedX
                , &matchedY
@@ -1241,26 +1232,26 @@ match := ImageSearch(
                , getScreenYbyWindowPercentage('90%')
                , '*100 ' . _imageFile_friendMenuButton)
            if (match == 1) {
-targetX := matchedX - targetWindowX + 10
-             targetY := matchedY - targetWindowY + 10
-             ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
-             delayXLong()
-             if (Destination == "RequestList") {
-                 ControlClick('X' . getWindowXbyWindowPercentage('80%') . ' Y' . getWindowYbyWindowPercentage('86%'),
-                         targetWindowHwnd, , 'Left', 1, 'NA', ,)
-                     delayShort()
-                     return
-             }
-             else if (Destination == "FriendList") {
-                 return
-             }
+failCount := 0
+               targetX := matchedX - targetWindowX + 10
+               targetY := matchedY - targetWindowY + 10
+               ControlClick('X' . targetX . ' Y' . targetY, targetWindowHwnd, , 'Left', 1, 'NA', ,)
+               delayXLong()
+               if (Destination == "RequestList") {
+                   ControlClick('X' . getWindowXbyWindowPercentage('80%') . ' Y' . getWindowYbyWindowPercentage('86%'),
+                           targetWindowHwnd, , 'Left', 1, 'NA', ,)
+                       return
+               }
+               else if (Destination == "FriendList") {
+                   return
+               }
            }
            else if match == 0 {
-switchfailCount := switchfailCount + 1
-                     SendUiMsg(_currentLocale.CantRedefineScreen . ' For ' . switchfailCount . ' times')
-                     _clickCloseModalButton()
+failCount := failCount + 1
+               SendUiMsg(_currentLocale.CantRedefineScreen . ' failCount: ' . failCount)
+               SendInput "{esc}"
            }
-                     }
+        }
 }
 
 MillisecToTime(msec) {
